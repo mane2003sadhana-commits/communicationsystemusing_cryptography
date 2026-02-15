@@ -11,7 +11,8 @@ import TutorialsHome from "../tutorials/TutorialsHome";
 import CaesarCipherTutorial from "../tutorials/CaesarCipher"
 import ColumnarTransposition from "../tutorials/ColumnarTransposition";
 import RailFenceCipher from "../tutorials/RailFenceCipher";
-
+import VigenereCipher from "../tutorials/VigenerCipher";
+import Profile from "./Profile";
 
 
 const UserDashboard = () => {
@@ -21,8 +22,6 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   const [selectedTutorial, setSelectedTutorial] = useState(null);
-
-
 
   // 🔐 Fetch logged-in user details
   useEffect(() => {
@@ -94,6 +93,17 @@ const UserDashboard = () => {
               <RailFenceCipher />
             </>
           )}
+ {selectedTutorial === "vigener" && (
+            <>
+              <button
+                style={styles.backBtn}
+                onClick={() => setSelectedTutorial(null)}
+              >
+                ← Back to Tutorials
+              </button>
+              <VigenereCipher />
+            </>
+          )}
 
 
     </>
@@ -107,12 +117,13 @@ case "inbox":
           </>
         );
       case "profile":
-        return (
-          <>
-            <h2>Profile</h2>
-            <p>View your user details and cryptography activity summary.</p>
-          </>
-        );
+  return (
+    <>
+      <h2>Profile Analytics</h2>
+      <Profile />
+    </>
+  );
+
       default:
         return null;
     }

@@ -8,11 +8,9 @@ const TutorialsHome = ({ onSelect }) => {
       <div style={styles.grid}>
         <div style={styles.card} onClick={() => onSelect("caesar")}>
           Caesar Cipher
-        </div>
+        </div>       
 
-        
-
-        <div style={styles.card}>Playfair Cipher</div>
+        <div style={styles.card} onClick={() => onSelect("vigener")}>Vigener Cipher</div>
         <div
   style={styles.card}
   onClick={() => onSelect("railfence")}

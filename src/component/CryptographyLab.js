@@ -10,9 +10,8 @@ const CryptographyLab = () => {
   const [key, setKey] = useState("");
   const [method, setMethod] = useState("");
 
-  // -----------------------------
   // Auto migrate user if outside /users
-  // -----------------------------
+  
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -34,9 +33,7 @@ const CryptographyLab = () => {
       .catch((err) => console.log(err));
   }, []);
 
-  // -----------------------------
   // Fetch users for dropdown
-  // -----------------------------
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -64,9 +61,7 @@ const CryptographyLab = () => {
     return () => unsubscribe();
   }, []);
 
-  // -----------------------------
   // Encryption functions
-  // -----------------------------
   const caesarEncrypt = (text, shift) => {
     return text
       .toUpperCase()
@@ -137,6 +132,33 @@ const railFenceEncrypt = (text, rails) => {
   return fence.flat().join("").toUpperCase();
 };
 
+const vigenereEncrypt = (text, key) => {
+  let upperText = text.toUpperCase();
+  let upperKey = key.toUpperCase().replace(/[^A-Z]/g, "");
+
+  if (!upperKey) return text;
+
+  let output = "";
+  let j = 0;
+
+  for (let i = 0; i < upperText.length; i++) {
+    let t = upperText[i];
+
+    if (t < "A" || t > "Z") {
+      output += t;
+    } else {
+      let k = upperKey[j % upperKey.length];
+      let encryptedChar = String.fromCharCode(
+        ((t.charCodeAt(0) - 65 + (k.charCodeAt(0) - 65)) % 26) + 65
+      );
+      output += encryptedChar;
+      j++;
+    }
+  }
+
+  return output;
+};
+
 
   const handleEncrypt = () => {
     if (!message || !key || !method) {
@@ -149,19 +171,18 @@ const railFenceEncrypt = (text, rails) => {
       case "caesar":
         encrypted = caesarEncrypt(message, parseInt(key));
         break;
-      case "playfair":
-        encrypted = "Playfair Encryption not implemented yet";
-        break;
+      
       case "railfence":
   encrypted = railFenceEncrypt(message, key);
   break;
+  case "vigenere":
+    encrypted = vigenereEncrypt(message, key);
+    break;
 
       case "columnar":
          encrypted = columnarEncrypt(message, key);
         break;
-      case "aes":
-        encrypted = "AES Encryption not implemented yet";
-        break;
+      
       default:
         alert("Select a valid encryption method");
         return;
@@ -170,9 +191,7 @@ const railFenceEncrypt = (text, rails) => {
     setEncryptedMsg(encrypted);
   };
 
-  // -----------------------------
   // Send encrypted message
-  // -----------------------------
   const handleSend = () => {
     if (!receiver || !encryptedMsg) {
       alert("Select receiver and encrypt message first");
@@ -239,21 +258,25 @@ const railFenceEncrypt = (text, rails) => {
       >
         <option value="">-- Select Method --</option>
         <option value="caesar">Caesar Cipher</option>
-        <option value="playfair">Playfair Cipher</option>
+<option value="vigenere">Vigenere Cipher</option>
         <option value="railfence">Rail Fence Cipher</option>
         <option value="columnar">Columnar Transposition</option>
-        <option value="aes">AES</option>
       </select>
 
       {/* Secret Key */}
-      <label style={styles.label}>Secret Key</label>
-     <input
-  type="text"
+     <label style={styles.label}>Secret Key</label>
+<input
+  type={method === "caesar" ? "number" : "text"}
   style={styles.input}
-  placeholder="Enter secret key"
+  placeholder={
+    method === "caesar"
+      ? "Enter number key (e.g., 3)"
+      : "Enter text key (e.g., SECRET)"
+  }
   value={key}
   onChange={(e) => setKey(e.target.value)}
 />
+
 
 
       {/* Buttons */}

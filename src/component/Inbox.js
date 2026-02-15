@@ -91,6 +91,36 @@ const Inbox = () => {
   return decrypted;
 };
 
+// Vigenere Cipher decrypt
+const vigenereDecrypt = (cipherText, key) => {
+  let upperCipher = cipherText.toUpperCase();
+  let upperKey = key.toUpperCase().replace(/[^A-Z]/g, "");
+
+  if (!upperKey) return cipherText;
+
+  let output = "";
+  let j = 0;
+
+  for (let i = 0; i < upperCipher.length; i++) {
+    let c = upperCipher[i];
+
+    if (c < "A" || c > "Z") {
+      output += c;
+    } else {
+      let k = upperKey[j % upperKey.length];
+
+      let decryptedChar = String.fromCharCode(
+        ((c.charCodeAt(0) - 65 - (k.charCodeAt(0) - 65) + 26) % 26) + 65
+      );
+
+      output += decryptedChar;
+      j++;
+    }
+  }
+
+  return output;
+};
+
 // Rail Fence Cipher decrypt
 const railFenceDecrypt = (cipherText, rails) => {
   rails = parseInt(rails);
@@ -149,6 +179,9 @@ const railFenceDecrypt = (cipherText, rails) => {
       break;
       case "railfence":
       decrypted = railFenceDecrypt(msg.encryptedMsg, msg.key);
+      break;
+    case "vigenere":
+      decrypted = vigenereDecrypt(msg.encryptedMsg, msg.key);
       break;
 
     default:
