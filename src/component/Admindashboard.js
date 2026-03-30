@@ -511,6 +511,8 @@ const { max, min } = getMethodAnalysis();
 
   return (
     <div style={styles.container}>
+      <h1>ADMIN UPDATED</h1>
+
       {/* SIDEBAR */}
       <div style={styles.sidebar}>
         <h2 style={styles.logo}>Admin</h2>
@@ -558,7 +560,6 @@ const { max, min } = getMethodAnalysis();
     </div>
   );
 };
-
 export default Admindashboard;
 
 // ---------------- STYLES ----------------
