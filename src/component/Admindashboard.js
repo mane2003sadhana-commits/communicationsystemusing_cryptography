@@ -29,16 +29,6 @@ const getFilteredMessages = () => {
   });
 };
 
-const getUsersByDate = () => {
-  if (!fromDate || !toDate) return [];
-
-  const from = new Date(fromDate).getTime();
-  const to = new Date(toDate).getTime();
-
-  return users.filter((u) => {
-    return u.createdAt >= from && u.createdAt <= to;
-  });
-};
 
 const getFilteredUsers = () => {
   if (!fromDate || !toDate) return users;
@@ -333,10 +323,7 @@ const { max, min } = getMethodAnalysis();
               user?.email ||
               "Unknown";
 
-            const date = m.timestamp
-              ? new Date(m.timestamp).toLocaleString()
-              : "-";
-
+           
             return (
               <tr key={i}>
                 <td style={styles.td}>{name}</td>
@@ -511,8 +498,6 @@ const { max, min } = getMethodAnalysis();
 
   return (
     <div style={styles.container}>
-      <h1>ADMIN UPDATED</h1>
-
       {/* SIDEBAR */}
       <div style={styles.sidebar}>
         <h2 style={styles.logo}>Admin</h2>
