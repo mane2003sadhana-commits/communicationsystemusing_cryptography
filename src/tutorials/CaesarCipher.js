@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "../images/caser.jpeg";
 
 const CaesarCipher = () => {
   const [text, setText] = useState("");
@@ -98,8 +99,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundImage:
-      "url('https://images.unsplash.com/photo-1510519138101-570d1dca3d66')",
+    backgroundImage: `url(${Image})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",
