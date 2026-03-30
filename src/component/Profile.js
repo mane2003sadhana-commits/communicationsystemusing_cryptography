@@ -19,7 +19,6 @@ import {
 } from "recharts";
 
 const Profile = () => {
-
   const [stats, setStats] = useState({
     sent: 0,
     received: 0,
@@ -30,7 +29,7 @@ const Profile = () => {
   const [methodData, setMethodData] = useState([]);
   const [timelineData, setTimelineData] = useState([]);
 
-  const COLORS = ["#2563eb", "#16a34a", "#dc2626", "#9333ea"];
+  const COLORS = ["#3b82f6", "#10b981", "#ef4444", "#8b5cf6"];
 
   useEffect(() => {
     if (!auth.currentUser) return;

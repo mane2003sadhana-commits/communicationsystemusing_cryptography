@@ -10,8 +10,7 @@ const CryptographyLab = () => {
   const [key, setKey] = useState("");
   const [method, setMethod] = useState("");
 
-  // Auto migrate user if outside /users
-  
+  /* ================= USER MIGRATION ================= */
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -33,7 +32,7 @@ const CryptographyLab = () => {
       .catch((err) => console.log(err));
   }, []);
 
-  // Fetch users for dropdown
+  /* ================= FETCH USERS ================= */
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -61,7 +60,7 @@ const CryptographyLab = () => {
     return () => unsubscribe();
   }, []);
 
-  // Encryption functions
+  /* ================= ENCRYPTION ================= */
   const caesarEncrypt = (text, shift) => {
     return text
       .toUpperCase()
@@ -74,91 +73,86 @@ const CryptographyLab = () => {
   };
 
   const columnarEncrypt = (text, key) => {
-  let message = text.replace(/\s/g, "").toUpperCase();
-  let k = key.toUpperCase();
+    let message = text.replace(/\s/g, "").toUpperCase();
+    let k = key.toUpperCase();
 
-  const cols = k.length;
-  const rows = Math.ceil(message.length / cols);
+    const cols = k.length;
+    const rows = Math.ceil(message.length / cols);
 
-  // Create matrix
-  let matrix = Array.from({ length: rows }, () =>
-    Array(cols).fill("X")
-  );
+    let matrix = Array.from({ length: rows }, () =>
+      Array(cols).fill("X")
+    );
 
-  // Fill matrix row-wise
-  let index = 0;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (index < message.length) {
-        matrix[r][c] = message[index++];
+    let index = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (index < message.length) {
+          matrix[r][c] = message[index++];
+        }
       }
     }
-  }
 
-  // Sort key alphabetically
-  const keyOrder = k
-    .split("")
-    .map((char, i) => ({ char, i }))
-    .sort((a, b) => a.char.localeCompare(b.char));
+    const keyOrder = k
+      .split("")
+      .map((char, i) => ({ char, i }))
+      .sort((a, b) => a.char.localeCompare(b.char));
 
-  // Read column-wise
-  let encrypted = "";
-  keyOrder.forEach((k) => {
-    for (let r = 0; r < rows; r++) {
-      encrypted += matrix[r][k.i];
+    let encrypted = "";
+    keyOrder.forEach((k) => {
+      for (let r = 0; r < rows; r++) {
+        encrypted += matrix[r][k.i];
+      }
+    });
+
+    return encrypted;
+  };
+
+  const railFenceEncrypt = (text, rails) => {
+    rails = parseInt(rails);
+    if (rails <= 1) return text;
+
+    const fence = Array.from({ length: rails }, () => []);
+    let rail = 0;
+    let direction = 1;
+
+    for (let char of text.replace(/\s/g, "")) {
+      fence[rail].push(char);
+      rail += direction;
+
+      if (rail === 0 || rail === rails - 1) {
+        direction *= -1;
+      }
     }
-  });
 
-  return encrypted;
-};
+    return fence.flat().join("").toUpperCase();
+  };
 
-const railFenceEncrypt = (text, rails) => {
-  rails = parseInt(rails);
-  if (rails <= 1) return text;
+  const vigenereEncrypt = (text, key) => {
+    let upperText = text.toUpperCase();
+    let upperKey = key.toUpperCase().replace(/[^A-Z]/g, "");
 
-  const fence = Array.from({ length: rails }, () => []);
-  let rail = 0;
-  let direction = 1;
+    if (!upperKey) return text;
 
-  for (let char of text.replace(/\s/g, "")) {
-    fence[rail].push(char);
+    let output = "";
+    let j = 0;
 
-    rail += direction;
-    if (rail === 0 || rail === rails - 1) {
-      direction *= -1;
+    for (let i = 0; i < upperText.length; i++) {
+      let t = upperText[i];
+
+      if (t < "A" || t > "Z") {
+        output += t;
+      } else {
+        let k = upperKey[j % upperKey.length];
+        let encryptedChar = String.fromCharCode(
+          ((t.charCodeAt(0) - 65 + (k.charCodeAt(0) - 65)) % 26) + 65
+        );
+        output += encryptedChar;
+        j++;
+      }
     }
-  }
 
-  return fence.flat().join("").toUpperCase();
-};
-
-const vigenereEncrypt = (text, key) => {
-  let upperText = text.toUpperCase();
-  let upperKey = key.toUpperCase().replace(/[^A-Z]/g, "");
-
-  if (!upperKey) return text;
-
-  let output = "";
-  let j = 0;
-
-  for (let i = 0; i < upperText.length; i++) {
-    let t = upperText[i];
-
-    if (t < "A" || t > "Z") {
-      output += t;
-    } else {
-      let k = upperKey[j % upperKey.length];
-      let encryptedChar = String.fromCharCode(
-        ((t.charCodeAt(0) - 65 + (k.charCodeAt(0) - 65)) % 26) + 65
-      );
-      output += encryptedChar;
-      j++;
-    }
-  }
-
-  return output;
-};
-
+    return output;
+  };
 
   const handleEncrypt = () => {
     if (!message || !key || !method) {
@@ -167,34 +161,32 @@ const vigenereEncrypt = (text, key) => {
     }
 
     let encrypted = "";
+
     switch (method) {
       case "caesar":
         encrypted = caesarEncrypt(message, parseInt(key));
         break;
-      
       case "railfence":
-  encrypted = railFenceEncrypt(message, key);
-  break;
-  case "vigenere":
-    encrypted = vigenereEncrypt(message, key);
-    break;
-
-      case "columnar":
-         encrypted = columnarEncrypt(message, key);
+        encrypted = railFenceEncrypt(message, key);
         break;
-      
+      case "vigenere":
+        encrypted = vigenereEncrypt(message, key);
+        break;
+      case "columnar":
+        encrypted = columnarEncrypt(message, key);
+        break;
       default:
-        alert("Select a valid encryption method");
+        alert("Select valid method");
         return;
     }
 
     setEncryptedMsg(encrypted);
   };
 
-  // Send encrypted message
+  /* ================= SEND ================= */
   const handleSend = () => {
     if (!receiver || !encryptedMsg) {
-      alert("Select receiver and encrypt message first");
+      alert("Select receiver & encrypt first");
       return;
     }
 
@@ -207,144 +199,170 @@ const vigenereEncrypt = (text, key) => {
       timestamp: Date.now(),
     })
       .then(() => {
-        // ✅ Only show success alert after push succeeds
-        alert("Encrypted message sent successfully!");
+        alert("Message sent successfully!");
         setMessage("");
         setEncryptedMsg("");
         setKey("");
         setReceiver("");
         setMethod("");
       })
-      .catch((err) => {
-        console.error("Error sending message:", err);
-        alert("Failed to send message. Please try again.");
-      });
+      .catch(() => alert("Error sending message"));
   };
 
+  /* ================= UI ================= */
   return (
-    <div>
-      <h2 style={{ marginBottom: "20px" }}>Send Secure Message</h2>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>🔐 Secure Message Sender</h2>
 
-      {/* Receiver Dropdown */}
-      <label style={styles.label}>Select Receiver</label>
-      <select
-        style={styles.input}
-        value={receiver}
-        onChange={(e) => setReceiver(e.target.value)}
-      >
-        <option value="">-- Select User --</option>
-        {users.map((user) => (
-          <option key={user.uid} value={user.uid}>
-            {user.fullname}
-          </option>
-        ))}
-      </select>
+        <label style={styles.label}>Receiver</label>
+        <select
+          style={styles.input}
+          value={receiver}
+          onChange={(e) => setReceiver(e.target.value)}
+        >
+          <option value="">-- Select User --</option>
+          {users.map((u) => (
+            <option key={u.uid} value={u.uid}>
+              {u.fullname}
+            </option>
+          ))}
+        </select>
 
-      {/* Message Input */}
-      <label style={styles.label}>Enter Message</label>
-      <textarea
-        style={styles.textarea}
-        placeholder="Type your message here..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
+        <label style={styles.label}>Message</label>
+        <textarea
+          style={styles.textarea}
+          value={message}
+            placeholder="Enter your message..."
+          onChange={(e) => setMessage(e.target.value)}
+        />
 
-      {/* Encryption Method */}
-      <label style={styles.label}>Select Encryption Method</label>
-      <select
-        style={styles.input}
-        value={method}
-        onChange={(e) => setMethod(e.target.value)}
-      >
-        <option value="">-- Select Method --</option>
-        <option value="caesar">Caesar Cipher</option>
-<option value="vigenere">Vigenere Cipher</option>
-        <option value="railfence">Rail Fence Cipher</option>
-        <option value="columnar">Columnar Transposition</option>
-      </select>
+        <label style={styles.label}>Method</label>
+        <select
+          style={styles.input}
+          value={method}
+          
+          onChange={(e) => setMethod(e.target.value)}
+        >
+          <option value="">-- Select Method --</option>
+          <option value="caesar">Caesar</option>
+          <option value="vigenere">Vigenere</option>
+          <option value="railfence">Rail Fence</option>
+          <option value="columnar">Columnar</option>
+        </select>
 
-      {/* Secret Key */}
-     <label style={styles.label}>Secret Key</label>
-<input
-  type={method === "caesar" ? "number" : "text"}
-  style={styles.input}
-  placeholder={
-    method === "caesar"
-      ? "Enter number key (e.g., 3)"
-      : "Enter text key (e.g., SECRET)"
-  }
-  value={key}
-  onChange={(e) => setKey(e.target.value)}
-/>
+        <label style={styles.label}>Key</label>
+        <input
+          type={method === "caesar" ? "number" : "text"}
+          style={styles.input}
+          value={key}
+            placeholder="Enter secret key ..."
 
+          onChange={(e) => setKey(e.target.value)}
+        />
 
-
-      {/* Buttons */}
-      <div style={styles.buttonGroup}>
-        <button style={styles.actionBtn} onClick={handleEncrypt}>
-          Encrypt
-        </button>
-        <button style={styles.sendBtn} onClick={handleSend}>
-          Send Securely
-        </button>
-      </div>
-
-      {/* Show Encrypted Message */}
-      {encryptedMsg && (
-        <div style={{ marginTop: "20px" }}>
-          <b>Encrypted Message:</b> {encryptedMsg}
+        <div style={styles.buttonGroup}>
+          <button style={styles.encryptBtn} onClick={handleEncrypt}>
+            Encrypt
+          </button>
+          <button style={styles.sendBtn} onClick={handleSend}>
+            Send
+          </button>
         </div>
-      )}
+
+        {encryptedMsg && (
+          <div style={styles.output}>
+            <b>Encrypted:</b> {encryptedMsg}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default CryptographyLab;
 
-
-// Styles
+/* ================= STYLES ================= */
 
 const styles = {
+  container: {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "30px",
+
+  backgroundImage: "url('https://images.unsplash.com/photo-1510511233900-1982d92bd835')",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+
+  position: "relative",
+},
+  card: {
+    width: "100%",
+    maxWidth: "600px",
+    padding: "25px",
+    borderRadius: "12px",
+    background: "#fff",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: "20px",
+  },
   label: {
+    marginTop: "10px",
     fontWeight: "bold",
-    display: "block",
-    marginTop: "15px",
-    marginBottom: "6px",
   },
   input: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-  },
-  textarea: {
-    width: "100%",
-    height: "80px",
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    resize: "none",
-  },
-  buttonGroup: {
-    marginTop: "25px",
+  width: "100%",
+  height: "45px",              // fixed same height
+  padding: "10px",
+  marginTop: "5px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  boxSizing: "border-box",     // important
+  fontSize: "14px",
+  
+},
+
+textarea: {
+  width: "100%",
+  height: "75px",              // same as input
+  padding: "10px",
+  marginTop: "5px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  resize: "none",              // prevent manual resize
+  boxSizing: "border-box",
+  fontSize: "14px",
+},
+buttonGroup: {
     display: "flex",
-    gap: "15px",
+    gap: "10px",
+    marginTop: "20px",
   },
-  actionBtn: {
-    padding: "10px 18px",
-    backgroundColor: "#2563eb",
+  encryptBtn: {
+    flex: 1,
+    padding: "10px",
+    background: "#2563eb",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
-    cursor: "pointer",
   },
   sendBtn: {
-    padding: "10px 20px",
-    backgroundColor: "#16a34a",
+    flex: 1,
+    padding: "10px",
+    background: "#16a34a",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "bold",
+  },
+  output: {
+    marginTop: "15px",
+    padding: "10px",
+    background: "#f1f5f9",
+    borderRadius: "6px",
   },
 };

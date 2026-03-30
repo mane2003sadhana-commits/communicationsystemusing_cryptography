@@ -196,7 +196,9 @@ const railFenceDecrypt = (cipherText, rails) => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Inbox</h2>
+      <div style={styles.titleBox}>
+  📩 Secure Inbox
+</div>
       {messages.length === 0 ? (
         <p style={styles.noMsg}>No messages found.</p>
       ) : (
@@ -204,7 +206,18 @@ const railFenceDecrypt = (cipherText, rails) => {
           {messages.map((msg) => {
             const isOpen = openMsgId === msg.id;
             return (
-              <div key={msg.id} style={styles.card}>
+              <div
+  key={msg.id}
+  style={styles.card}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = "translateY(-3px)";
+    e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.12)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.08)";
+  }}
+>
                 {/* Header: From, Time, View Button */}
                 <div style={styles.header}>
                   <span style={styles.sender}>{usersMap[msg.senderId] || "Unknown"}</span>
@@ -244,83 +257,126 @@ const railFenceDecrypt = (cipherText, rails) => {
 
 export default Inbox;
 
-// -----------------------------
-// Styles
-// -----------------------------
 const styles = {
   container: {
     width: "100%",
+    padding: "15px",
   },
-  title: {
-    textAlign: "center",
-    marginBottom: "20px",
-    color: "#1e293b",
-  },
+
+  /* 🔥 Gradient Title */
+titleBox: {
+  textAlign: "center",
+  fontSize: "28px",
+  fontWeight: "bold",
+  marginBottom: "20px",
+  padding: "12px 20px",
+
+  background: "linear-gradient(135deg, #2563eb, #22c55e)",
+  color: "#ffffff",
+
+  borderRadius: "10px",
+  boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+
+  letterSpacing: "1px",
+},
+
   noMsg: {
     textAlign: "center",
     fontStyle: "italic",
-    color: "#555",
+    color: "#64748b",
+    fontSize: "14px",
   },
+
   msgList: {
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
-    maxHeight: "60vh",
+    gap: "18px",
+    maxHeight: "65vh",
     overflowY: "auto",
-    paddingRight: "5px",
+    paddingRight: "10px",
   },
+
+  /* 🔥 Card Design */
   card: {
-    backgroundColor: "#f9fafb",
-    padding: "12px 15px",
-    borderRadius: "10px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-    transition: "transform 0.2s, box-shadow 0.2s",
+    backgroundColor: "#ffffff",
+    padding: "16px",
+    borderRadius: "14px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+    borderLeft: "5px solid #2563eb",
+    transition: "all 0.3s ease",
   },
+
+  /* Optional hover effect */
+  cardHover: {
+    transform: "translateY(-3px)",
+    boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
+  },
+
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "5px",
+    flexWrap: "wrap",
+    gap: "10px",
   },
+
   sender: {
     fontWeight: "bold",
     color: "#2563eb",
+    fontSize: "15px",
   },
+
   time: {
     fontSize: "12px",
-    color: "#555",
-    marginRight: "10px",
+    color: "#6b7280",
   },
+
+  /* 🔥 View Button */
   viewBtn: {
-    padding: "5px 12px",
-    backgroundColor: "#2563eb",
+    padding: "6px 14px",
+    background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "6px",
     cursor: "pointer",
     fontSize: "12px",
+    fontWeight: "bold",
+    boxShadow: "0 3px 8px rgba(37,99,235,0.3)",
+    transition: "0.3s",
   },
+
   content: {
-    marginTop: "10px",
+    marginTop: "12px",
     fontSize: "14px",
     color: "#1f2937",
+    lineHeight: "1.6",
+    background: "#f8fafc",
+    padding: "12px",
+    borderRadius: "10px",
+    border: "1px solid #e5e7eb",
   },
+
+  /* 🔥 Decrypt Button */
   decryptBtn: {
-    padding: "6px 12px",
-    backgroundColor: "#16a34a",
+    padding: "8px 14px",
+    background: "linear-gradient(135deg, #16a34a, #22c55e)",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "bold",
     marginTop: "10px",
+    boxShadow: "0 3px 8px rgba(34,197,94,0.3)",
+    transition: "0.3s",
   },
+
   decrypted: {
-    padding: "10px",
-    backgroundColor: "#e0f2fe",
-    borderRadius: "6px",
+    padding: "12px",
+    background: "#ecfeff",
+    borderRadius: "10px",
     fontWeight: "bold",
     color: "#0c4a6e",
-    marginTop: "10px",
+    marginTop: "12px",
+    borderLeft: "4px solid #06b6d4",
   },
 };

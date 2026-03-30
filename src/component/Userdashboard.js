@@ -8,22 +8,19 @@ import CryptographyLab from "./CryptographyLab";
 import Inbox from "./Inbox";
 
 import TutorialsHome from "../tutorials/TutorialsHome";
-import CaesarCipherTutorial from "../tutorials/CaesarCipher"
+import CaesarCipherTutorial from "../tutorials/CaesarCipher";
 import ColumnarTransposition from "../tutorials/ColumnarTransposition";
 import RailFenceCipher from "../tutorials/RailFenceCipher";
 import VigenereCipher from "../tutorials/VigenerCipher";
 import Profile from "./Profile";
 
-
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("crypto");
   const [userName, setUserName] = useState("");
+  const [selectedTutorial, setSelectedTutorial] = useState(null);
 
   const navigate = useNavigate();
 
-  const [selectedTutorial, setSelectedTutorial] = useState(null);
-
-  // 🔐 Fetch logged-in user details
   useEffect(() => {
     if (!auth.currentUser) return;
 
@@ -36,7 +33,6 @@ const UserDashboard = () => {
     });
   }, []);
 
-  // 🚪 Logout
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/login");
@@ -51,78 +47,54 @@ const UserDashboard = () => {
             <CryptographyLab />
           </>
         );
+
       case "tutorials":
-  return (
-    <>
-      {!selectedTutorial && (
-        <TutorialsHome onSelect={setSelectedTutorial} />
-      )}
-
-      {selectedTutorial === "caesar" && (
-        <>
-          <button
-            style={styles.backBtn}
-            onClick={() => setSelectedTutorial(null)}
-          >
-            ← Back to Tutorials
-          </button>
-
-          <CaesarCipherTutorial />
-        </>
-      )}
-      {selectedTutorial === "columnar" && (
-  <>
-    <button
-      style={styles.backBtn}
-      onClick={() => setSelectedTutorial(null)}
-    >
-      ← Back to Tutorials
-    </button>
-
-    <ColumnarTransposition />
-  </>
-)}
-  {selectedTutorial === "railfence" && (
-            <>
-              <button
-                style={styles.backBtn}
-                onClick={() => setSelectedTutorial(null)}
-              >
-                ← Back to Tutorials
-              </button>
-              <RailFenceCipher />
-            </>
-          )}
- {selectedTutorial === "vigener" && (
-            <>
-              <button
-                style={styles.backBtn}
-                onClick={() => setSelectedTutorial(null)}
-              >
-                ← Back to Tutorials
-              </button>
-              <VigenereCipher />
-            </>
-          )}
-
-
-    </>
-  );
-
-case "inbox":
         return (
           <>
-            <h2>Inbox</h2>
+            {!selectedTutorial && (
+              <TutorialsHome onSelect={setSelectedTutorial} />
+            )}
+
+            {selectedTutorial && (
+              <>
+                <button
+                  style={styles.backBtn}
+                  onClick={() => setSelectedTutorial(null)}
+                >
+                  ← Back to Tutorials
+                </button>
+
+                {selectedTutorial === "caesar" && (
+                  <CaesarCipherTutorial />
+                )}
+                {selectedTutorial === "columnar" && (
+                  <ColumnarTransposition />
+                )}
+                {selectedTutorial === "railfence" && (
+                  <RailFenceCipher />
+                )}
+                {selectedTutorial === "vigener" && (
+                  <VigenereCipher />
+                )}
+              </>
+            )}
+          </>
+        );
+
+      case "inbox":
+        return (
+          <>
             <Inbox />
           </>
         );
+
       case "profile":
-  return (
-    <>
-      <h2>Profile Analytics</h2>
-      <Profile />
-    </>
-  );
+        return (
+          <>
+            <h2>Profile Analytics</h2>
+            <Profile />
+          </>
+        );
 
       default:
         return null;
@@ -136,7 +108,6 @@ case "inbox":
         <span>Secure Communication System</span>
 
         <div style={styles.headerRight}>
-          {/* 👤 PROFILE ICON */}
           <div
             style={styles.profileWrapper}
             onMouseEnter={(e) =>
@@ -150,13 +121,11 @@ case "inbox":
               {userName.charAt(0).toUpperCase()}
             </div>
 
-            {/* Hover Card */}
             <div style={styles.profileTooltip}>
               <b>{userName}</b>
             </div>
           </div>
 
-          {/* LOGOUT */}
           <button onClick={handleLogout} style={styles.logoutBtn}>
             Logout
           </button>
@@ -165,22 +134,29 @@ case "inbox":
 
       {/* NAVBAR */}
       <div style={styles.navbar}>
-        <button onClick={() => setActiveTab("crypto")} style={styles.navBtn}>
-          Cryptography Lab
-        </button>
-        <button onClick={() => setActiveTab("tutorials")} style={styles.navBtn}>
-          Tutorials
-        </button>
-        <button onClick={() => setActiveTab("inbox")} style={styles.navBtn}>
-          Inbox
-        </button>
-        <button onClick={() => setActiveTab("profile")} style={styles.navBtn}>
-          Profile
-        </button>
+        {["crypto", "tutorials", "inbox", "profile"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              ...styles.navBtn,
+              background:
+                activeTab === tab
+                  ? "linear-gradient(135deg, #16a34a, #22c55e)"
+                  : styles.navBtn.background,
+            }}
+          >
+            {tab === "crypto"
+              ? "Cryptography Lab"
+              : tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
       </div>
 
-      {/* MAIN CONTENT */}
-      <div style={styles.mainContent}>{renderContent()}</div>
+      {/* SCROLLABLE CONTENT */}
+      <div style={styles.contentWrapper}>
+        <div style={styles.mainContent}>{renderContent()}</div>
+      </div>
     </div>
   );
 };
@@ -188,35 +164,46 @@ case "inbox":
 export default UserDashboard;
 
 /* ===== STYLES ===== */
+
 const styles = {
   container: {
     height: "100vh",
-    fontFamily: "Arial, sans-serif",
-    backgroundColor: "#f4f6f8",
+    fontFamily: "'Poppins', sans-serif",
+    background: "linear-gradient(135deg, #e0e7ff, #f8fafc)",
   },
-  header: {
-    backgroundColor: "#1e293b",
-    color: "#ffffff",
-    padding: "18px",
-    fontSize: "20px",
-    fontWeight: "bold",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  headerRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "15px",
-  },
+
+ header: {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  zIndex: 1000,
+  background: "linear-gradient(90deg, #414e6d, #323b4b)",
+  color: "#fff",
+  padding: "15px 40px", // ⬅️ increased side padding
+  fontSize: "20px",
+  fontWeight: "600",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  boxSizing: "border-box", // ⬅️ important fix
+},
+
+headerRight: {
+  display: "flex",
+  alignItems: "center",
+  gap: "20px",
+  marginRight: "10px", // ⬅️ pushes content left slightly
+},
   profileWrapper: {
     position: "relative",
   },
+
   profileIcon: {
     width: "36px",
     height: "36px",
     borderRadius: "50%",
-    backgroundColor: "#2563eb",
+    background: "#3b82f6",
     color: "#fff",
     display: "flex",
     alignItems: "center",
@@ -224,62 +211,74 @@ const styles = {
     cursor: "pointer",
     fontWeight: "bold",
   },
+
   profileTooltip: {
-  position: "absolute",
-  top: "26px",
-  right: "0",
-  backgroundColor: "#111827",
-  color: "#ffffff",
-  padding: "3px 6px",
-  borderRadius: "4px",
-  fontSize: "11px",
-  whiteSpace: "nowrap",
-  zIndex: 10,
-},
+    position: "absolute",
+    top: "45px",
+    right: 0,
+    background: "#111",
+    color: "#fff",
+    padding: "5px 10px",
+    borderRadius: "5px",
+    fontSize: "12px",
+    display: "none",
+  },
 
   logoutBtn: {
-    backgroundColor: "#dc2626",
+    background: "#dc2626",
     color: "#fff",
     border: "none",
-    padding: "8px 14px",
+    padding: "7px 14px",
     borderRadius: "6px",
     cursor: "pointer",
-    fontWeight: "bold",
   },
+
   navbar: {
+    position: "fixed",
+    top: "65px",
+    width: "100%",
+    zIndex: 999,
     display: "flex",
     justifyContent: "center",
     gap: "15px",
-    padding: "12px",
-    backgroundColor: "#e5e7eb",
+    padding: "10px",
+    background: "#f1f5f9",
+    borderBottom: "1px solid #ddd",
   },
+
   navBtn: {
     padding: "8px 16px",
     border: "none",
-    backgroundColor: "#2563eb",
-    color: "#ffffff",
-    borderRadius: "5px",
+    background: "#2563eb",
+    color: "#fff",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontSize: "14px",
   },
+
+  contentWrapper: {
+    position: "absolute",
+    top: "120px",
+    bottom: 0,
+    width: "100%",
+    overflowY: "auto",
+  },
+
   mainContent: {
     margin: "20px auto",
     padding: "25px",
     width: "80%",
-    minHeight: "60vh",
-    backgroundColor: "#ffffff",
+    background: "#fff",
     borderRadius: "10px",
-    boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
   },
-  backBtn: {
-  marginBottom: "15px",
-  padding: "6px 12px",
-  backgroundColor: "#e5e7eb",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: "bold",
-},
 
+  backBtn: {
+    marginBottom: "15px",
+    padding: "6px 12px",
+    background: "#e5e7eb",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
 };

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
+import { FaLock, FaUserShield } from "react-icons/fa";
+import { MdSecurity } from "react-icons/md";
 
 function Landingpg() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ function Landingpg() {
       {/* HEADER */}
       <header style={styles.header}>
         <h1 style={styles.title}>
-          Secure Communication System Using Cryptography
+          🔒 Secure Communication System Using Cryptography
         </h1>
         <p style={styles.subtitle}>
           MCA Mini Project | React JS & Firebase
@@ -31,10 +32,12 @@ function Landingpg() {
           with authorized receivers.
         </p>
 
-        <button style={styles.startBtn} onClick={() => navigate("/login")}>
-  Start Project
-</button>
-
+        <button
+          style={styles.startBtn}
+          onClick={() => navigate("/login")}
+        >
+          Start Project
+        </button>
       </section>
 
       {/* FEATURES SECTION */}
@@ -42,29 +45,34 @@ function Landingpg() {
         <h2 style={styles.sectionTitle}>Project Highlights</h2>
 
         <div style={styles.cardContainer}>
+          
           <div style={styles.card}>
+            <MdSecurity size={35} color="#2563eb" />
             <h3>Multiple Encryption Techniques</h3>
             <p>
               Caesar Cipher, Rail Fence, Columnar Transposition,
-              AES, and RSA techniques included.
+              AES, and RSA algorithms implemented.
             </p>
           </div>
 
           <div style={styles.card}>
+            <FaLock size={35} color="#2563eb" />
             <h3>Secure Message Sharing</h3>
             <p>
               Messages are encrypted before sending and decrypted
-              using secret keys by the receiver.
+              only by the authorized receiver.
             </p>
           </div>
 
           <div style={styles.card}>
+            <FaUserShield size={35} color="#2563eb" />
             <h3>Admin & User Dashboards</h3>
             <p>
-              Separate dashboards for admin and users with reports,
-              monitoring, and learning modules.
+              Separate dashboards for admin and users including
+              monitoring and reports.
             </p>
           </div>
+
         </div>
       </section>
 
@@ -79,6 +87,7 @@ function Landingpg() {
   );
 }
 
+
 /* ================== STYLES ================== */
 
 const styles = {
@@ -89,31 +98,32 @@ const styles = {
   },
 
   header: {
-    background: "linear-gradient(90deg, #0f172a, #1e3a8a)",
+    background: "linear-gradient(90deg, #0f172a, #1e40af)",
     color: "#fff",
-    padding: "30px 20px",
+    padding: "35px 20px",
     textAlign: "center",
   },
 
   title: {
     margin: 0,
-    fontSize: "32px",
+    fontSize: "34px",
+    fontWeight: "600",
   },
 
   subtitle: {
-    marginTop: "8px",
+    marginTop: "10px",
     fontSize: "16px",
     opacity: 0.9,
   },
 
   hero: {
-    padding: "60px 20px",
+    padding: "70px 20px",
     textAlign: "center",
     backgroundColor: "#ffffff",
   },
 
   heroTitle: {
-    fontSize: "28px",
+    fontSize: "30px",
     color: "#1e293b",
   },
 
@@ -127,13 +137,15 @@ const styles = {
 
   startBtn: {
     marginTop: "25px",
-    padding: "14px 40px",
+    padding: "14px 45px",
     fontSize: "16px",
-    backgroundColor: "#2563eb",
+    background: "linear-gradient(90deg,#2563eb,#3b82f6)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "30px",
     cursor: "pointer",
+    boxShadow: "0 6px 18px rgba(37,99,235,0.3)",
+    transition: "0.3s",
   },
 
   features: {
@@ -159,8 +171,8 @@ const styles = {
     backgroundColor: "#ffffff",
     padding: "25px",
     width: "280px",
-    borderRadius: "10px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    borderRadius: "12px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
     textAlign: "center",
   },
 
@@ -168,7 +180,7 @@ const styles = {
     backgroundColor: "#0f172a",
     color: "#e5e7eb",
     textAlign: "center",
-    padding: "20px",
+    padding: "25px",
     fontSize: "14px",
   },
 };
