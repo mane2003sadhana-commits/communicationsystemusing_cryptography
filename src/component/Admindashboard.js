@@ -177,32 +177,6 @@ const { max, min } = getMethodAnalysis();
     </>
   );
 
-  const renderUsers = () => (
-    <>
-      <h2 style={styles.heading}>User Management</h2>
-
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((u, i) => (
-            <tr key={i}>
-              <td>{u.fullname || u.name}</td>
-              <td>{u.email}</td>
-              <td>{u.role || "User"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  );
-
   const getTopUsers = () => {
   let userCount = {};
 
@@ -815,33 +789,7 @@ sidebar: {
     boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
-  /* ================= TABLE ================= */
-
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    background: "white",
-    marginTop: "20px",
-    borderRadius: "10px",
-    overflow: "hidden",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-  },
-
-  th: {
-    padding: "14px",
-    background: "#e2e8f0",
-    fontWeight: "600",
-  },
-
-  td: {
-    padding: "14px",
-    borderBottom: "1px solid #e5e7eb",
-  },
-
-  tr: {
-    transition: "0.2s",
-  },
-
+ 
   /* ================= REPORT ================= */
 
   reportBox: {
@@ -876,24 +824,7 @@ sidebar: {
     border: "1px solid #ccc",
   },
 
-  tr: {
-  transition: "0.2s",
-},
-
-table: {
-  width: "100%",
-  borderCollapse: "collapse",
-  background: "white",
-  marginTop: "20px",
-  borderRadius: "12px",
-  overflow: "hidden",
-  boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-},
-
-tr: {
-  transition: "0.2s",
-},
-
+ 
 td: {
   padding: "14px",
   borderBottom: "1px solid #e5e7eb",
@@ -926,9 +857,6 @@ tr: {
   transition: "0.2s",
 },
 
-/* add this manually inside map if you want zebra:
-   background: i % 2 === 0 ? "#ffffff" : "#f9fafb"
-*/
 
 /* 🔥 rank badges */
 rankGold: {
@@ -994,14 +922,5 @@ labelText: {
   fontSize: "14px",
   fontWeight: "600",
   color: "#1e293b",
-},
-
-dateInput: {
-  padding: "6px 10px",
-  borderRadius: "6px",
-  border: "1px solid #cbd5e1",
-  fontSize: "14px",
-  outline: "none",
-  background: "#fff",
 },
 };

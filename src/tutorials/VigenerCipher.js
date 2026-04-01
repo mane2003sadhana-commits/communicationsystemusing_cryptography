@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import BgImage from "../images/vigenere.jpeg"; // ✅ your image
 
 const VigenereCipher = () => {
   const [text, setText] = useState("");
   const [key, setKey] = useState("");
   const [result, setResult] = useState("");
-  const navigate = useNavigate();
 
   const generateKey = (text, key) => {
     key = key.toUpperCase().replace(/[^A-Z]/g, "");

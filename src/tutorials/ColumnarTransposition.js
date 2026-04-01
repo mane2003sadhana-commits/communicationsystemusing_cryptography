@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "../images/columnar.jpeg";
 
 const ColumnarTransposition = () => {
   const [text, setText] = useState("");
   const [key, setKey] = useState("");
   const [result, setResult] = useState("");
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+ 
   const encrypt = () => {
     if (!key) {
       alert("Please enter a key");
