@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend,
 } from "recharts";
-
+import logo from "../images/logo.jpeg";
 const Admindashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedReport, setSelectedReport] = useState("users");
@@ -21,23 +21,33 @@ const [toDate, setToDate] = useState("");
 const getFilteredMessages = () => {
   if (!fromDate || !toDate) return messages;
 
-  const from = new Date(fromDate).getTime();
-  const to = new Date(toDate).getTime();
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+
+  // 🔥 VERY IMPORTANT (include full day)
+  to.setHours(23, 59, 59, 999);
 
   return messages.filter((m) => {
-    return m.timestamp >= from && m.timestamp <= to;
+    if (!m.timestamp) return false;
+
+    const msgDate = new Date(m.timestamp);
+    return msgDate >= from && msgDate <= to;
   });
 };
-
-
 const getFilteredUsers = () => {
   if (!fromDate || !toDate) return users;
 
-  const from = new Date(fromDate).getTime();
-  const to = new Date(toDate).getTime();
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+
+  // 🔥 VERY IMPORTANT (include full day)
+  to.setHours(23, 59, 59, 999);
 
   return users.filter((u) => {
-    return u.createdAt >= from && u.createdAt <= to;
+    if (!u.createdAt) return false;
+
+    const userDate = new Date(u.createdAt);
+    return userDate >= from && userDate <= to;
   });
 };
   // LOGOUT
@@ -223,23 +233,26 @@ const { max, min } = getMethodAnalysis();
   <>
     <h2 style={styles.heading}>User Report</h2>
 
-    {/* DATE FILTER */}
-    <div style={styles.filterBox}>
-      <input
-        type="date"
-        value={fromDate}
-        onChange={(e) => setFromDate(e.target.value)}
-        style={styles.input}
-      />
+     {/* DATE FILTER */}
+<div style={styles.filterRow}>
+  
+  <span style={styles.labelText}>From :</span>
+  <input
+    type="date"
+    value={fromDate}
+    onChange={(e) => setFromDate(e.target.value)}
+    style={styles.dateInput}
+  />
 
-      <input
-        type="date"
-        value={toDate}
-        onChange={(e) => setToDate(e.target.value)}
-        style={styles.input}
-      />
-    </div>
+  <span style={styles.labelText}>To :</span>
+  <input
+    type="date"
+    value={toDate}
+    onChange={(e) => setToDate(e.target.value)}
+    style={styles.dateInput}
+  />
 
+</div>
     {/* TOTAL */}
     <h3>Total Users: {getFilteredUsers().length}</h3>
 
@@ -276,23 +289,26 @@ const { max, min } = getMethodAnalysis();
   <>
     <h2 style={styles.heading}>Date-wise Message Report</h2>
 
-    {/* DATE FILTER */}
-    <div style={styles.filterBox}>
-      <input
-        type="date"
-        value={fromDate}
-        onChange={(e) => setFromDate(e.target.value)}
-        style={styles.input}
-      />
+   {/* DATE FILTER */}
+<div style={styles.filterRow}>
+  
+  <span style={styles.labelText}>From :</span>
+  <input
+    type="date"
+    value={fromDate}
+    onChange={(e) => setFromDate(e.target.value)}
+    style={styles.dateInput}
+  />
 
-      <input
-        type="date"
-        value={toDate}
-        onChange={(e) => setToDate(e.target.value)}
-        style={styles.input}
-      />
-    </div>
+  <span style={styles.labelText}>To :</span>
+  <input
+    type="date"
+    value={toDate}
+    onChange={(e) => setToDate(e.target.value)}
+    style={styles.dateInput}
+  />
 
+</div>
     {/* TOTAL COUNT */}
     <h3>Total Messages: {getFilteredMessages().length}</h3>
 
@@ -391,44 +407,69 @@ const { max, min } = getMethodAnalysis();
       <h3 style={styles.subHeading}>User Ranking</h3>
 
       <table style={styles.table}>
-        <thead style={{ background: "#e2e8f0" }}>
+        <thead>
           <tr>
             <th style={styles.th}>Rank</th>
             <th style={styles.th}>User</th>
-            <th style={styles.th}>Messages Sent</th>
+            <th style={styles.th}>Messages</th>
           </tr>
         </thead>
 
         <tbody>
-          {getTopUsers().map((u, i) => (
-            <tr key={i}>
-              <td style={styles.td}>{i + 1}</td>
-              <td style={styles.td}>{u.name}</td>
-              <td style={styles.td}>{u.count}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+  {getTopUsers().map((u, i) => (
+    <tr key={i} style={styles.tr}>
+      <td style={styles.td}>
+        {i === 0 ? (
+          <span style={styles.rankGold}>🥇 1</span>
+        ) : i === 1 ? (
+          <span style={styles.rankSilver}>🥈 2</span>
+        ) : i === 2 ? (
+          <span style={styles.rankBronze}>🥉 3</span>
+        ) : (
+          i + 1
+        )}
+      </td>
+
+      <td style={styles.td}>{u.name}</td>
+      <td style={styles.td}>{u.count}</td>
+    </tr>
+  ))}
+</tbody>
+</table>
     </div>
 
-    {/* GRAPH BELOW */}
+    {/* GRAPH */}
     <div style={{ ...styles.reportBox, marginTop: "25px" }}>
       <h3 style={styles.subHeading}>Graphical View</h3>
 
-      <div style={{ height: 300 }}>
+      <div style={{ height: 320 }}>
         <ResponsiveContainer>
-          <BarChart data={getTopUsers()}>
-            <XAxis dataKey="name" angle={-20} textAnchor="end" />
+          <BarChart
+            data={getTopUsers().slice(0, 6)} // 🔥 show only top 6 for clarity
+            margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
+          >
+            <XAxis
+              dataKey="name"
+              interval={0}
+              angle={-25}
+              textAnchor="end"
+              height={80}
+              tick={{ fontSize: 12 }}
+            />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="count" fill="#16a34a" radius={[6, 6, 0, 0]} />
+            <Bar
+              dataKey="count"
+              fill="#2563eb"
+              radius={[6, 6, 0, 0]}
+              barSize={35}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
   </>
 )}
-
     {/* ENCRYPTION REPORT */}
    {selectedReport === "encryption" && (
   <>
@@ -492,169 +533,262 @@ const { max, min } = getMethodAnalysis();
 
   const renderContent = () => {
     if (activeTab === "dashboard") return renderDashboard();
-    if (activeTab === "users") return renderUsers();
+    // if (activeTab === "users") return renderUsers();
     if (activeTab === "reports") return renderReports();
   };
 
-  return (
-    <div style={styles.container}>
-      {/* SIDEBAR */}
-      <div style={styles.sidebar}>
-        <h2 style={styles.logo}>Admin</h2>
+ return (
+  <div style={styles.container}>
 
-        <button onClick={() => setActiveTab("dashboard")} style={styles.sideBtn}>
-          Dashboard
-        </button>
+   {/* HEADER */}
+<div style={styles.header}>
+  
+  {/* LEFT SECTION */}
+  <div style={styles.headerLeft}>
+    <img src={logo} alt="logo" style={styles.logo} />
 
-        <button onClick={() => setActiveTab("users")} style={styles.sideBtn}>
-          Users
-        </button>
-
-        <button onClick={() => setActiveTab("reports")} style={styles.sideBtn}>
-          Reports
-        </button>
-
-        {/* REPORT OPTIONS */}
-        {activeTab === "reports" && (
-          <div style={styles.subMenu}>
-            <button onClick={() => setSelectedReport("users")}>
-              User Report
-            </button>
-            <button onClick={() => setSelectedReport("messages")}>
-              Message Report
-            </button>
-            <button onClick={() => setSelectedReport("encryption")}>
-              Encryption Usage Analysis Report
-            </button>
-            <button onClick={() => setSelectedReport("userwise")}>
-  User-wise Report
-</button>
-<button onClick={() => setSelectedReport("topusers")}>
-  Top Active Users
-</button>
-          </div>
-        )}
-
-        <button style={styles.logout} onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
-
-      {/* RIGHT CONTENT */}
-      <div style={styles.content}>{renderContent()}</div>
+    <div>
+      <div style={styles.projectTitle}>Secure Communication System</div>
+      <div style={styles.companyName}> Cryptography </div>
     </div>
-  );
+  </div>
+
+  {/* RIGHT SECTION */}
+  <div style={styles.headerRight}>
+    
+    <div style={styles.adminDetails}>
+      <div><b>Admin:</b> Sadhana Mane </div>
+      <div style={styles.smallText}>sadhana1234@gmail.com</div>
+      <div style={styles.roleBadge}>Administrator</div>
+    </div>
+
+    <button onClick={handleLogout} style={styles.logoutBtn}>
+      Logout
+    </button>
+
+  </div>
+</div>
+    {/* SIDEBAR */}
+    <div style={styles.sidebar}>
+<div style={styles.adminSidebar}>
+<span style={styles.adminIcon}>🛡️</span>  <span style={styles.adminText}>Admin</span>
+</div>
+      <button onClick={() => setActiveTab("dashboard")} style={styles.sideBtn}>
+        Dashboard
+      </button>
+
+      <button onClick={() => setActiveTab("reports")} style={styles.sideBtn}>
+        Reports
+      </button>
+
+      {activeTab === "reports" && (
+        <div style={styles.subMenu}>
+          <button onClick={() => setSelectedReport("users")}>User Report</button>
+          <button onClick={() => setSelectedReport("messages")}>Message Report</button>
+          <button onClick={() => setSelectedReport("encryption")}>
+            Encryption Report
+          </button>
+          <button onClick={() => setSelectedReport("userwise")}>
+            User-wise Report
+          </button>
+          <button onClick={() => setSelectedReport("topusers")}>
+            Top Users
+          </button>
+        </div>
+      )}
+
+      <button style={styles.logoutSidebar} onClick={handleLogout}>
+        Logout
+      </button>
+    </div>
+
+    {/* CONTENT */}
+    <div style={styles.content}>
+      {renderContent()}
+    </div>
+  </div>
+);
 };
 export default Admindashboard;
-
-// ---------------- STYLES ----------------
-
 const styles = {
- container: {
+  container: {
+    display: "flex",
+    height: "100vh",
+    fontFamily: "Segoe UI",
+    background: "#f1f5f9",
+  },adminSidebar: {
   display: "flex",
-  height: "100vh",
-  fontFamily: "Segoe UI",
-  overflow: "hidden", // ✅ ADD THIS
-},
- sidebar: {
-  width: "250px",
-  background: "linear-gradient(180deg, #0f172a, #1e293b)",
-  color: "white",
-  padding: "25px 15px",
-  display: "flex",
-  flexDirection: "column",
-  position: "fixed",
-  top: 0,
-  left: 0,
-  height: "100vh",
-  boxShadow: "2px 0 15px rgba(0,0,0,0.2)",
-},
- analysisBox: {
-  background: "white",
-  padding: "15px",
-  borderRadius: "10px",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "10px",
   marginBottom: "20px",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+  padding: "10px 0",
+  borderBottom: "1px solid rgba(255,255,255,0.1)", // subtle divider
 },
 
-table: {
-  width: "100%",
-  borderCollapse: "collapse",
-  background: "white",
-  marginTop: "20px",
-  borderRadius: "10px",
-  overflow: "hidden",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+adminIcon: {
+  fontSize: "18px",
+  color: "#38bdf8", // 🔥 FIX: bright blue (visible + matches theme)
 },
 
-th: {
-  padding: "14px",
-  textAlign: "left",
-  background: "#e2e8f0",
+adminText: {
+  fontSize: "18px",
   fontWeight: "600",
+  color: "#ffffff",
+  letterSpacing: "0.5px",
 },
 
-td: {
-  padding: "14px",
-  borderBottom: "1px solid #e5e7eb",
-},
+  /* ================= HEADER ================= */
 
-tr: {
-  transition: "0.2s",
-},
+  header: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "80px",
+    zIndex: 1000,
+    background: "linear-gradient(90deg, #0f172a, #1e293b)",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0 25px",
+    boxSizing: "border-box",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  },
 
- logo: {
-  marginBottom: "40px",
-  fontSize: "22px",
-  fontWeight: "bold",
-  textAlign: "center",
-  letterSpacing: "1px",
-},
- sideBtn: {
-  padding: "12px",
-  marginBottom: "12px",
-  background: "#1e293b",
-  border: "none",
+  headerLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+  },
+
+  logo: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    objectFit: "cover",
+    border: "3px solid #38bdf8",
+  },
+
+  projectTitle: {
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#fff",
+  },
+
+  companyName: {
+    fontSize: "12px",
+    color: "#cbd5e1",
+  },
+
+  headerRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+  },
+
+  adminDetails: {
+    textAlign: "right",
+    color: "#e2e8f0",
+    fontSize: "13px",
+  },
+
+  smallText: {
+    fontSize: "12px",
+    color: "#94a3b8",
+  },
+
+  roleBadge: {
+    marginTop: "3px",
+    padding: "3px 10px",
+    background: "#22c55e",
+    color: "#fff",
+    borderRadius: "20px",
+    fontSize: "10px",
+    fontWeight: "600",
+  },
+
+  logoutBtn: {
+    background: "linear-gradient(135deg, #ef4444, #dc2626)",
+    color: "#fff",
+    border: "none",
+    padding: "7px 14px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+  },
+
+  /* ================= SIDEBAR ================= */
+sidebar: {
+  width: "230px", // 🔥 slightly reduced
+  background: "linear-gradient(180deg, #020617, #0f172a)",
   color: "white",
-  cursor: "pointer",
-  borderRadius: "8px",
-  transition: "0.3s",
-  fontWeight: "500",
-},
-
- subMenu: {
-  marginLeft: "10px",
-  marginBottom: "15px",
+  padding: "15px 10px", // 🔥 reduced padding
+  position: "fixed",
+  top: "80px",
+  left: 0,
+  height: "calc(100vh - 80px)",
   display: "flex",
   flexDirection: "column",
-  gap: "6px",
+  boxShadow: "2px 0 10px rgba(0,0,0,0.3)",
 },
+  logoText: {
+    marginBottom: "20px",
+    fontSize: "20px",
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#38bdf8",
+  },
 
- logout: {
-  marginTop: "30px",
-  padding: "12px",
-  background: "linear-gradient(135deg, #dc2626, #ef4444)",
-  border: "none",
-  color: "white",
+  sideBtn: {
+  padding: "10px",       // 🔥 reduced height
+  marginBottom: "6px",   // 🔥 FIX GAP
+  background: "transparent",
+  border: "1px solid #334155",
+  color: "#e2e8f0",
   cursor: "pointer",
-  borderRadius: "8px",
-  fontWeight: "bold",
-  transition: "0.3s",
+  borderRadius: "6px",
+  fontSize: "14px",
+  fontWeight: "500",
+  textAlign: "left",
 },
-content: {
-  flex: 1,
-  background: "#f8fafc",
-  padding: "35px",
-  marginLeft: "270px",
-  height: "100vh",
-  overflowY: "auto",
+  subMenu: {
+  marginLeft: "8px",
+  marginBottom: "10px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px", // 🔥 smaller gap
 },
- heading: {
-  marginBottom: "20px",
-  fontSize: "24px",
-  fontWeight: "700",
-  color: "#0f172a",
-},
+  logoutSidebar: {
+    padding: "12px",
+    background: "linear-gradient(135deg, #dc2626, #ef4444)",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    borderRadius: "8px",
+    fontWeight: "bold",
+  },
+
+  /* ================= CONTENT ================= */
+
+  content: {
+    flex: 1,
+    marginLeft: "240px", // ✅ FIX overlap
+    marginTop: "80px",
+    padding: "30px",
+    height: "calc(100vh - 80px)",
+    overflowY: "auto",
+  },
+
+  heading: {
+    marginBottom: "20px",
+    fontSize: "26px",
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+
+  /* ================= CARDS ================= */
 
   cards: {
     display: "flex",
@@ -663,59 +797,211 @@ content: {
   },
 
   card: {
-  flex: 1,
-  background: "linear-gradient(135deg, #ffffff, #f1f5f9)",
-  padding: "25px",
-  borderRadius: "14px",
-  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-  textAlign: "center",
-  fontSize: "22px",
-  fontWeight: "600",
-  transition: "0.3s",
-},
+    flex: 1,
+    background: "linear-gradient(135deg, #ffffff, #e2e8f0)",
+    padding: "25px",
+    borderRadius: "14px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+    textAlign: "center",
+    fontSize: "22px",
+    fontWeight: "600",
+  },
 
   chartBox: {
     background: "white",
     padding: "20px",
-    borderRadius: "10px",
+    borderRadius: "12px",
     height: "300px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
- 
+  /* ================= TABLE ================= */
 
-  reportCard: {
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
     background: "white",
-    padding: "20px",
+    marginTop: "20px",
     borderRadius: "10px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    overflow: "hidden",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
   },
 
-  reportContainer: {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "20px",
+  th: {
+    padding: "14px",
+    background: "#e2e8f0",
+    fontWeight: "600",
+  },
+
+  td: {
+    padding: "14px",
+    borderBottom: "1px solid #e5e7eb",
+  },
+
+  tr: {
+    transition: "0.2s",
+  },
+
+  /* ================= REPORT ================= */
+
+  reportBox: {
+    background: "white",
+    padding: "25px",
+    borderRadius: "14px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+  },
+
+  subHeading: {
+    marginBottom: "15px",
+    color: "#1e293b",
+  },
+
+  analysisBox: {
+    background: "#f8fafc",
+    padding: "15px",
+    borderRadius: "10px",
+    marginBottom: "20px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+  },
+
+  filterBox: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "15px",
+  },
+
+  input: {
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+  },
+
+  tr: {
+  transition: "0.2s",
 },
 
-reportBox: {
+table: {
+  width: "100%",
+  borderCollapse: "collapse",
   background: "white",
-  padding: "25px",
-  borderRadius: "14px",
+  marginTop: "20px",
+  borderRadius: "12px",
+  overflow: "hidden",
   boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
 },
-subHeading: {
-  marginBottom: "15px",
+
+tr: {
+  transition: "0.2s",
+},
+
+td: {
+  padding: "14px",
+  borderBottom: "1px solid #e5e7eb",
+  textAlign: "center",
+},
+
+th: {
+  padding: "14px",
+  background: "linear-gradient(135deg, #1e293b, #334155)", // 🔥 premium dark gradient
+  color: "#ffffff",
+  fontWeight: "700",
+  fontSize: "14px",
+  letterSpacing: "0.5px",
+  textTransform: "uppercase",
+  borderBottom: "2px solid #0f172a",
+},
+
+/* 🔥 zebra striping */
+table: {
+  width: "100%",
+  borderCollapse: "collapse",
+  background: "white",
+  marginTop: "20px",
+  borderRadius: "12px",
+  overflow: "hidden",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+},
+/* subtle alternating rows */
+tr: {
+  transition: "0.2s",
+},
+
+/* add this manually inside map if you want zebra:
+   background: i % 2 === 0 ? "#ffffff" : "#f9fafb"
+*/
+
+/* 🔥 rank badges */
+rankGold: {
+  background: "#facc15",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "600",
+},
+
+rankSilver: {
+  background: "#cbd5f5",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "600",
+},
+
+rankBronze: {
+  background: "#fdba74",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: "600",
+},
+filterContainer: {
+  display: "flex",
+  gap: "20px",
+  alignItems: "center",
+  marginBottom: "20px",
+  flexWrap: "wrap",
+},
+
+dateGroup: {
+  display: "flex",
+  flexDirection: "column",
+},
+
+label: {
+  fontSize: "13px",
+  marginBottom: "5px",
+  color: "#334155",
+  fontWeight: "600",
+},
+
+dateInput: {
+  padding: "8px 10px",
+  borderRadius: "6px",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  outline: "none",
+  background: "#fff",
+},
+filterRow: {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  marginBottom: "20px",
+  flexWrap: "wrap",
+},
+
+labelText: {
+  fontSize: "14px",
+  fontWeight: "600",
   color: "#1e293b",
 },
 
-filterBox: {
-  display: "flex",
-  gap: "10px",
-  marginBottom: "15px",
-},
-
-input: {
-  padding: "8px",
+dateInput: {
+  padding: "6px 10px",
   borderRadius: "6px",
-  border: "1px solid #ccc",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  outline: "none",
+  background: "#fff",
 },
 };

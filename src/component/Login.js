@@ -11,18 +11,20 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     setError("");
-    localStorage.removeItem("role"); // ✅ prevent stale role
+    setLoading(true);
+    localStorage.removeItem("role");
 
     if (!email || !password) {
       setError("Please enter email and password");
+      setLoading(false);
       return;
     }
 
     try {
-      // 1️⃣ Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -30,41 +32,45 @@ function Login() {
       );
 
       const uid = userCredential.user.uid;
-
-      // 2️⃣ Get user data from Realtime Database
       const snapshot = await get(ref(rtdb, `users/${uid}`));
 
       if (!snapshot.exists()) {
         setError("User data not found");
+        setLoading(false);
         return;
       }
 
-      const userData = snapshot.val();
-      const role = userData?.role?.toLowerCase();
+      const role = snapshot.val()?.role?.toLowerCase();
 
       if (!role) {
         setError("User role missing");
+        setLoading(false);
         return;
       }
 
-      // 3️⃣ Store role locally
       localStorage.setItem("role", role);
 
-      // 4️⃣ Redirect based on role
-     if (role === "admin") {
-  navigate("/admindashboard");
-} else {
-  navigate("/userdashboard");
-}
-
+      setTimeout(() => {
+        navigate(role === "admin" ? "/admindashboard" : "/userdashboard");
+      }, 1200); // smoother feel
 
     } catch (err) {
       setError("Invalid email or password");
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
+      
+      {/* 🔥 FULL SCREEN LOADER */}
+      {loading && (
+        <div style={styles.loaderOverlay}>
+          <div style={styles.spinner}></div>
+          <p style={styles.loadingText}>Logging you in...</p>
+        </div>
+      )}
+
       <div style={styles.card}>
         <div style={styles.logo}>🔐</div>
         <h2 style={styles.title}>Welcome Back</h2>
@@ -96,7 +102,11 @@ function Login() {
           </span>
         </div>
 
-        <button style={styles.button} onClick={handleLogin}>
+        <button
+          style={styles.button}
+          onClick={handleLogin}
+          disabled={loading}
+        >
           Login
         </button>
 
@@ -114,7 +124,7 @@ function Login() {
   );
 }
 
-/* ===== STYLES (UNCHANGED) ===== */
+/* ===== STYLES ===== */
 const styles = {
   container: {
     minHeight: "100vh",
@@ -124,17 +134,21 @@ const styles = {
     background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     fontFamily: "Segoe UI, sans-serif",
   },
+
   card: {
     backgroundColor: "#fff",
     padding: "40px",
     width: "360px",
-    borderRadius: "14px",
-    boxShadow: "0 15px 40px rgba(0,0,0,0.15)",
+    borderRadius: "16px",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
     textAlign: "center",
+    transition: "0.3s",
   },
-  logo: { fontSize: "42px", marginBottom: "10px" },
+
+  logo: { fontSize: "44px", marginBottom: "10px" },
   title: { marginBottom: "5px", color: "#1e293b" },
   subtitle: { marginBottom: "25px", color: "#64748b", fontSize: "14px" },
+
   input: {
     width: "100%",
     padding: "12px",
@@ -142,8 +156,8 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #cbd5e1",
     fontSize: "15px",
-    outline: "none",
   },
+
   passwordBox: {
     display: "flex",
     alignItems: "center",
@@ -152,18 +166,20 @@ const styles = {
     borderRadius: "8px",
     marginBottom: "20px",
   },
+
   passwordInput: {
     flex: 1,
     padding: "12px",
     border: "none",
     fontSize: "15px",
-    outline: "none",
   },
+
   toggle: { cursor: "pointer", fontSize: "18px", paddingRight: "10px" },
+
   button: {
     width: "100%",
     padding: "12px",
-    backgroundColor: "#4f46e5",
+    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
@@ -171,7 +187,50 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
   },
+
   text: { marginTop: "18px", fontSize: "14px", color: "#475569" },
+
+  /* 🔥 LOADER OVERLAY */
+  loaderOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.4)",
+    backdropFilter: "blur(6px)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+
+  /* 🔥 SPINNER */
+  spinner: {
+    width: "60px",
+    height: "60px",
+    border: "6px solid #e5e7eb",
+    borderTop: "6px solid #4f46e5",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  },
+
+  loadingText: {
+    marginTop: "15px",
+    color: "#fff",
+    fontSize: "16px",
+    fontWeight: "500",
+  },
 };
+
+/* 🔥 KEYFRAMES */
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(`
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+`, styleSheet.cssRules.length);
 
 export default Login;

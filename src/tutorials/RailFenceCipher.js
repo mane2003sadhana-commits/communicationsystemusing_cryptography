@@ -68,210 +68,179 @@ const RailFenceCipher = () => {
   };
 
   return (
-    <div style={styles.page}>
-      {/* ✅ Background */}
-      <div style={styles.background}></div>
+  <div style={styles.page}>
+    <div style={styles.overlay}></div>
 
-      {/* Optional blobs (light effect) */}
-      <div style={styles.blob1}></div>
-      <div style={styles.blob2}></div>
+    <div style={styles.card}>
+      <h2 style={styles.title}>🚆 Rail Fence Cipher Tool</h2>
 
-      {/* Content */}
-      <div style={styles.overlay}>
-        <div style={styles.card}>
-          <h2 style={styles.title}>🚆 Rail Fence Cipher</h2>
+      <h4 style={styles.subheading}>Introduction</h4>
+      <p style={styles.text}>
+        Rail Fence Cipher is a transposition cipher where text is written in
+        a zig-zag pattern across multiple rails and then read row by row.
+      </p>
 
-          <h4 style={styles.heading}>Introduction</h4>
-          <p style={styles.text}>
-            Rail Fence Cipher is a transposition cipher where the message is written
-            in a zig-zag pattern across multiple rails and then read row by row.
-          </p>
+      <h4 style={styles.subheading}>Example</h4>
+      <p style={styles.text}>
+        Message: <b>HELLO WORLD</b><br />
+        Rails: <b>3</b><br />
+        Encrypted: <b>HOLELWRDLO</b>
+      </p>
 
-          <h4 style={styles.heading}>Example</h4>
-          <p style={styles.text}>
-            Message: <b>HELLO WORLD</b><br />
-            Rails: <b>3</b><br />
-            Encrypted: <b>HOLELWRDLO</b>
-          </p>
+      <h4 style={styles.subheading}>Try It Yourself</h4>
 
-          <h4 style={styles.heading}>Try It Yourself</h4>
+      <textarea
+        style={styles.input}
+        placeholder="Enter your message..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
 
-          <textarea
-            style={styles.input}
-            placeholder="Enter your message..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
+      <input
+        type="number"
+        style={styles.input}
+        value={rails}
+        min="2"
+        onChange={(e) => setRails(Number(e.target.value))}
+      />
 
-          <input
-            type="number"
-            style={styles.input}
-            value={rails}
-            min="2"
-            onChange={(e) => setRails(Number(e.target.value))}
-          />
-
-          <div style={styles.btnContainer}>
-            <button style={styles.encryptBtn} onClick={encrypt}>
-              Encrypt
-            </button>
-            <button style={styles.decryptBtn} onClick={decrypt}>
-              Decrypt
-            </button>
-          </div>
-
-          {result && (
-            <div style={styles.resultBox}>
-              <b>Output:</b>
-              <p style={styles.resultText}>{result}</p>
-            </div>
-          )}
-        </div>
+      <div style={styles.buttonGroup}>
+        <button style={styles.btn} onClick={encrypt}>
+          🔒 Encrypt
+        </button>
+        <button style={styles.btnSecondary} onClick={decrypt}>
+          🔓 Decrypt
+        </button>
       </div>
+
+      {result && (
+        <div style={styles.outputBox}>
+          <span style={styles.outputLabel}>Result</span>
+          <p style={styles.outputText}>{result}</p>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 };
 
 export default RailFenceCipher;
-
 const styles = {
   page: {
     minHeight: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    backgroundImage: `url(${BgImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
     position: "relative",
-    overflow: "hidden",
+    fontFamily: "Poppins, sans-serif",
+    padding: "20px",
   },
 
-  // ✅ Clean background (no repeat, no overlap)
-  background: {
+  overlay: {
     position: "absolute",
     top: 0,
     left: 0,
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${BgImage})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    filter: "blur(2px) brightness(0.95)",
+    background: "rgba(170, 163, 163, 0.75)",
     zIndex: 0,
   },
 
-  // ✅ NO backdrop blur (important fix)
-  overlay: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "rgba(0,0,0,0.15)",
-    position: "relative",
-    zIndex: 2,
-  },
-
-  // ✅ White card
   card: {
-    width: "100%",
-    maxWidth: "500px",
-    padding: "30px",
-    borderRadius: "16px",
-    background: "#ffffff",
+    width: "380px",
+    padding: "25px",
+    borderRadius: "18px",
+    background: "#f9fafb",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+    border: "1px solid #e5e7eb",
     color: "#1f2937",
-    boxShadow: "0 12px 35px rgba(0,0,0,0.25)",
+    position: "relative",
+    zIndex: 1,
   },
 
   title: {
     textAlign: "center",
-    marginBottom: "15px",
-    fontSize: "26px",
+    marginBottom: "20px",
+    fontSize: "22px",
+    fontWeight: "600",
     color: "#1e3a8a",
   },
 
-  heading: {
-    marginTop: "15px",
+  subheading: {
+    marginTop: "18px",
+    marginBottom: "6px",
+    fontSize: "14px",
     color: "#374151",
     fontWeight: "600",
   },
 
   text: {
-    fontSize: "14px",
-    lineHeight: "1.6",
+    fontSize: "13px",
     color: "#4b5563",
+    lineHeight: "1.6",
   },
 
   input: {
     width: "100%",
     marginTop: "12px",
-    padding: "12px",
+    padding: "10px",
     borderRadius: "10px",
     border: "1px solid #d1d5db",
     outline: "none",
+    fontSize: "14px",
     background: "#f9fafb",
     color: "#111827",
   },
 
-  btnContainer: {
+  buttonGroup: {
+    marginTop: "18px",
     display: "flex",
-    justifyContent: "center",
-    gap: "15px",
-    marginTop: "20px",
+    gap: "12px",
   },
 
-  encryptBtn: {
-    padding: "10px 20px",
-    background: "#22c55e",
+  btn: {
+    flex: 1,
+    padding: "10px",
+    background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
-
-  decryptBtn: {
-    padding: "10px 20px",
-    background: "#3b82f6",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
-
-  resultBox: {
-    marginTop: "20px",
-    padding: "12px",
-    background: "#f3f4f6",
     borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
   },
 
-  resultText: {
-    marginTop: "5px",
+  btnSecondary: {
+    flex: 1,
+    padding: "10px",
+    background: "linear-gradient(135deg, #059669, #047857)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  outputBox: {
+    marginTop: "22px",
+    padding: "16px",
+    borderRadius: "12px",
+    background: "#f3f4f6",
+    border: "1px solid #d1d5db",
+  },
+
+  outputLabel: {
+    fontSize: "12px",
+    color: "#6b7280",
+  },
+
+  outputText: {
+    marginTop: "6px",
     fontWeight: "bold",
+    letterSpacing: "1px",
+    fontSize: "15px",
     color: "#111827",
-  },
-
-  // subtle blobs
-  blob1: {
-    position: "absolute",
-    width: "200px",
-    height: "200px",
-    background: "rgba(99,102,241,0.15)",
-    filter: "blur(70px)",
-    top: "-60px",
-    left: "-60px",
-    borderRadius: "50%",
-    zIndex: 1,
-  },
-
-  blob2: {
-    position: "absolute",
-    width: "200px",
-    height: "200px",
-    background: "rgba(34,197,94,0.15)",
-    filter: "blur(70px)",
-    bottom: "-60px",
-    right: "-60px",
-    borderRadius: "50%",
-    zIndex: 1,
   },
 };

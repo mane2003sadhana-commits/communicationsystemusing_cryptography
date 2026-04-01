@@ -69,73 +69,63 @@ const VigenereCipher = () => {
 
     setResult(output);
   };
+return (
+  <div style={styles.page}>
+    <div style={styles.overlay}></div>
 
-  return (
-    <div style={styles.page}>
-      {/* ✅ Background Layer */}
-      <div style={styles.background}></div>
+    <div style={styles.card}>
+      <h2 style={styles.title}>🔐 Vigenère Cipher Tool</h2>
 
-      <div style={styles.overlay}>
-        <div style={styles.card}>
+      <h4 style={styles.subheading}>Introduction</h4>
+      <p style={styles.text}>
+        Vigenère Cipher is a method of encrypting text using a keyword.
+        Each letter in the message is shifted based on the corresponding
+        letter in the key, making it more secure than the Caesar Cipher.
+      </p>
 
-          <button style={styles.backBtn} onClick={() => navigate(-1)}>
-            ← Back
-          </button>
+      <h4 style={styles.subheading}>Example</h4>
+      <p style={styles.text}>
+        Message: <b>HELLO</b><br />
+        Key: <b>KEY</b><br />
+        Encrypted: <b>RIJVS</b>
+      </p>
 
-          <h2 style={styles.title}>🔐 Vigenère Cipher Tool</h2>
+      <h4 style={styles.subheading}>Try It Yourself</h4>
 
-          <h4 style={styles.heading}>Introduction</h4>
-          <p style={styles.text}>
-            Vigenère Cipher is a polyalphabetic substitution cipher using a keyword
-            to apply multiple Caesar shifts.
-          </p>
+      <textarea
+        style={styles.input}
+        placeholder="Enter your message..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
 
-          <h4 style={styles.heading}>Example</h4>
-          <p style={styles.text}>
-            Message: <b>HELLO</b><br />
-            Key: <b>KEY</b><br />
-            Encrypted: <b>RIJVS</b>
-          </p>
+      <input
+        type="text"
+        style={styles.input}
+        placeholder="Enter secret key..."
+        value={key}
+        onChange={(e) => setKey(e.target.value)}
+      />
 
-          <h4 style={styles.heading}>Try It Yourself</h4>
-
-          <textarea
-            style={styles.input}
-            placeholder="Enter your message..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-
-          <input
-            type="text"
-            style={styles.input}
-            placeholder="Enter secret key..."
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-          />
-
-          <div style={styles.btnContainer}>
-            <button style={styles.encryptBtn} onClick={encrypt}>
-              Encrypt
-            </button>
-            <button style={styles.decryptBtn} onClick={decrypt}>
-              Decrypt
-            </button>
-          </div>
-
-          {result && (
-            <div style={styles.resultBox}>
-              <p><b>Output:</b></p>
-              <p style={styles.resultText}>{result}</p>
-            </div>
-          )}
-
-        </div>
+      <div style={styles.buttonGroup}>
+        <button style={styles.btn} onClick={encrypt}>
+          🔒 Encrypt
+        </button>
+        <button style={styles.btnSecondary} onClick={decrypt}>
+          🔓 Decrypt
+        </button>
       </div>
-    </div>
-  );
-};
 
+      {result && (
+        <div style={styles.outputBox}>
+          <span style={styles.outputLabel}>Result</span>
+          <p style={styles.outputText}>{result}</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+};
 export default VigenereCipher;
 
 const styles = {
@@ -144,123 +134,116 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    backgroundImage: `url(${BgImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
     position: "relative",
-    overflow: "hidden",
     fontFamily: "Poppins, sans-serif",
+    padding: "20px",
   },
 
-  // ✅ Clean blurred background
-  background: {
+  overlay: {
     position: "absolute",
     top: 0,
     left: 0,
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${BgImage})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    filter: "blur(2px) brightness(0.95)",
+    background: "rgba(170, 163, 163, 0.75)",
     zIndex: 0,
   },
 
-  // ✅ Light overlay (no blur)
-  overlay: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "rgba(0,0,0,0.15)",
-    position: "relative",
-    zIndex: 2,
-  },
-
-  // ✅ White professional card
   card: {
-    width: "100%",
-    maxWidth: "520px",
-    background: "#ffffff",
+    width: "380px",
+    padding: "25px",
     borderRadius: "18px",
-    padding: "35px",
-    color: "#1f2937",
-    boxShadow: "0 15px 40px rgba(0,0,0,0.25)",
-    position: "relative",
-  },
-
-  backBtn: {
-    position: "absolute",
-    top: "15px",
-    left: "15px",
-    padding: "7px 15px",
-    background: "#f3f4f6",
+    background: "#f9fafb",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
     border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    cursor: "pointer",
+    color: "#1f2937",
+    position: "relative",
+    zIndex: 1,
   },
 
   title: {
     textAlign: "center",
     marginBottom: "20px",
-    fontSize: "26px",
-    color: "#1e3a8a",
+    fontSize: "22px",
     fontWeight: "600",
+    color: "#1e3a8a",
   },
 
-  heading: {
+  subheading: {
     marginTop: "18px",
+    marginBottom: "6px",
+    fontSize: "14px",
     color: "#374151",
     fontWeight: "600",
   },
 
   text: {
-    fontSize: "14px",
-    lineHeight: "1.7",
+    fontSize: "13px",
     color: "#4b5563",
+    lineHeight: "1.6",
   },
 
   input: {
     width: "100%",
-    marginTop: "14px",
-    padding: "12px",
+    marginTop: "12px",
+    padding: "8px",
     borderRadius: "10px",
     border: "1px solid #d1d5db",
+    outline: "none",
+    fontSize: "14px",
     background: "#f9fafb",
+    color: "#111827",
   },
 
-  btnContainer: {
+  buttonGroup: {
+    marginTop: "18px",
     display: "flex",
-    justifyContent: "center",
-    gap: "15px",
-    marginTop: "20px",
+    gap: "12px",
   },
 
-  encryptBtn: {
-    padding: "10px 20px",
-    background: "#3b82f6",
+  btn: {
+    flex: 1,
+    padding: "10px",
+    background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
-  },
-
-  decryptBtn: {
-    padding: "10px 20px",
-    background: "#10b981",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-  },
-
-  resultBox: {
-    marginTop: "20px",
-    padding: "15px",
-    background: "#f3f4f6",
     borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
   },
 
-  resultText: {
-    marginTop: "5px",
+  btnSecondary: {
+    flex: 1,
+    padding: "10px",
+    background: "linear-gradient(135deg, #059669, #047857)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  outputBox: {
+    marginTop: "22px",
+    padding: "16px",
+    borderRadius: "12px",
+    background: "#f3f4f6",
+    border: "1px solid #d1d5db",
+  },
+
+  outputLabel: {
+    fontSize: "12px",
+    color: "#6b7280",
+  },
+
+  outputText: {
+    marginTop: "6px",
     fontWeight: "bold",
+    letterSpacing: "1px",
+    fontSize: "15px",
     color: "#111827",
   },
 };

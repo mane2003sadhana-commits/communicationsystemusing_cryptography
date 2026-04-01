@@ -104,7 +104,7 @@ const styles = {
     backgroundPosition: "center",
     position: "relative",
     fontFamily: "Poppins, sans-serif",
-    padding: "20px",
+    padding: "18px",
   },
 
   overlay: {
@@ -118,8 +118,8 @@ const styles = {
   },
 
   card: {
-    width: "450px",
-    padding: "35px",
+    width: "380px",
+    padding: "25px",
     borderRadius: "18px",
     background: "#f9fafb",
     boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
@@ -154,7 +154,7 @@ const styles = {
   input: {
     width: "100%",
     marginTop: "12px",
-    padding: "12px",
+    padding: "8px",
     borderRadius: "10px",
     border: "1px solid #d1d5db",
     outline: "none",

@@ -3,19 +3,9 @@ import { ref, onValue } from "firebase/database";
 import { rtdb, auth } from "../Firebaseconfig";
 
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, Tooltip,
+  PieChart, Pie, Cell,
+  LineChart, Line, CartesianGrid, Legend, ResponsiveContainer,
 } from "recharts";
 
 const Profile = () => {
@@ -96,12 +86,52 @@ const Profile = () => {
     setTimelineData(timelineArr);
   };
 
+  const tooltipFix = {
+    cursor: false,
+    wrapperStyle: { outline: "none" },
+    contentStyle: {
+      backgroundColor: "white",
+      border: "1px solid #e5e7eb",
+      borderRadius: "10px",
+      boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+      color: "#111",
+    },
+  };
+
   return (
-    <div style={{
-      minHeight: "100vh",
-      padding: "30px",
-      background: "linear-gradient(135deg,#eef2ff,#f8fafc)"
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        padding: "30px",
+        background: "linear-gradient(135deg,#eef2ff,#f8fafc)"
+      }}
+    >
+
+      {/* ✅ GLOBAL FIX: REMOVE BLACK BOX / FOCUS OUTLINE */}
+      <style>
+        {`
+          *:focus {
+            outline: none !important;
+          }
+
+          svg:focus {
+            outline: none !important;
+          }
+
+          .recharts-wrapper,
+          .recharts-surface,
+          .recharts-pie,
+          .recharts-pie-sector,
+          .recharts-sector,
+          .recharts-bar-rectangle {
+            outline: none !important;
+          }
+
+          .recharts-active-shape {
+            outline: none !important;
+          }
+        `}
+      </style>
 
       <h1 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "20px" }}>
         Security Analytics Dashboard
@@ -135,7 +165,7 @@ const Profile = () => {
         ))}
       </div>
 
-      {/* BAR */}
+      {/* BAR CHART */}
       <div style={{
         background: "white",
         borderRadius: "20px",
@@ -143,17 +173,26 @@ const Profile = () => {
         boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
         marginBottom: "30px"
       }}>
+        
         <h3>Encryption Usage</h3>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={methodData}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="value" fill="#2563eb" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <ResponsiveContainer width="100%" height={300}>
+  <BarChart data={methodData}>
+    <XAxis dataKey="name" />
+    <YAxis />
+    <Tooltip {...tooltipFix} />
+
+    {/* ✅ FIX: disable active highlight completely */}
+    <Bar
+      dataKey="value"
+      fill="#2563eb"
+      isAnimationActive={false}
+      activeBar={false}
+      barSize={40}
+    />
+  </BarChart>
+</ResponsiveContainer>
+</div>
 
       {/* PIE + LINE */}
       <div style={{
@@ -161,8 +200,8 @@ const Profile = () => {
         gridTemplateColumns: "repeat(auto-fit,minmax(400px,1fr))",
         gap: "25px"
       }}>
-        
-        {/* PIE */}
+
+        {/* PIE CHART */}
         <div style={{
           background: "white",
           borderRadius: "20px",
@@ -173,17 +212,32 @@ const Profile = () => {
 
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={methodData} dataKey="value" outerRadius={110} label>
-                {methodData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
+              <Pie
+  data={methodData}
+  dataKey="value"
+  outerRadius={110}
+  label
+  stroke="none"
+  isAnimationActive={false}
+  activeIndex={-1}
+  activeShape={null}
+>
+  {methodData.map((entry, index) => (
+    <Cell
+      key={index}
+      fill={COLORS[index % COLORS.length]}
+      stroke="none"
+    />
+  ))}
+</Pie>
+
+              <Tooltip {...tooltipFix} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
-        {/* LINE */}
+        {/* LINE CHART */}
         <div style={{
           background: "white",
           borderRadius: "20px",
@@ -197,14 +251,21 @@ const Profile = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="messages" stroke="#16a34a" strokeWidth={3}/>
+              <Tooltip {...tooltipFix} />
+
+              <Line
+                type="monotone"
+                dataKey="messages"
+                stroke="#16a34a"
+                strokeWidth={3}
+                dot={false}
+                activeDot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
       </div>
-
     </div>
   );
 };

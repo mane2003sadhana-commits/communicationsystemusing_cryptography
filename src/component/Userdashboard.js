@@ -14,6 +14,7 @@ import RailFenceCipher from "../tutorials/RailFenceCipher";
 import VigenereCipher from "../tutorials/VigenerCipher";
 import Profile from "./Profile";
 
+import logo from "../images/logo.jpeg";
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("crypto");
   const [userName, setUserName] = useState("");
@@ -57,12 +58,21 @@ const UserDashboard = () => {
 
             {selectedTutorial && (
               <>
-                <button
-                  style={styles.backBtn}
-                  onClick={() => setSelectedTutorial(null)}
-                >
-                  ← Back to Tutorials
-                </button>
+               <button
+  style={styles.backBtn}
+  onClick={() => setSelectedTutorial(null)}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = "#2563eb";
+    e.currentTarget.querySelector("span").style.transform = "translateX(-4px)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = "#1e293b";
+    e.currentTarget.querySelector("span").style.transform = "translateX(0)";
+  }}
+>
+  <span style={styles.backIcon}>←</span>
+  Back
+</button>
 
                 {selectedTutorial === "caesar" && (
                   <CaesarCipherTutorial />
@@ -105,7 +115,10 @@ const UserDashboard = () => {
     <div style={styles.container}>
       {/* HEADER */}
       <div style={styles.header}>
-        <span>Secure Communication System</span>
+       <div style={styles.logoContainer}>
+  <img src={logo} alt="Logo" style={styles.logo} />
+  <span>Secure Communication System</span>
+</div>
 
         <div style={styles.headerRight}>
           <div
@@ -166,6 +179,20 @@ export default UserDashboard;
 /* ===== STYLES ===== */
 
 const styles = {
+
+  logoContainer: {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+},
+
+logo: {
+  width: "52px",        // ⬅️ slightly bigger (safe increase)
+  height: "52px",       // ⬅️ equal height to avoid distortion
+  borderRadius: "50%",  // ⬅️ makes it round
+  objectFit: "cover",   // ⬅️ prevents text/image cutting
+},
+
   container: {
     height: "100vh",
     fontFamily: "'Poppins', sans-serif",
@@ -213,17 +240,20 @@ headerRight: {
   },
 
   profileTooltip: {
-    position: "absolute",
-    top: "45px",
-    right: 0,
-    background: "#111",
-    color: "#fff",
-    padding: "5px 10px",
-    borderRadius: "5px",
-    fontSize: "12px",
-    display: "none",
-  },
+  position: "absolute",
+  top: "45px",
+  right: 0,
+  background: "#111",
+  color: "#fff",
+  padding: "6px 12px",
+  borderRadius: "6px",
+  fontSize: "13px",
+  display: "none",
 
+  whiteSpace: "nowrap",   // ✅ prevents line break
+  minWidth: "max-content",// ✅ auto width based on text
+  textAlign: "center",
+},
   logoutBtn: {
     background: "#dc2626",
     color: "#fff",
@@ -235,7 +265,7 @@ headerRight: {
 
   navbar: {
     position: "fixed",
-    top: "65px",
+    top: "80px",
     width: "100%",
     zIndex: 999,
     display: "flex",
@@ -273,12 +303,23 @@ headerRight: {
   },
 
   backBtn: {
-    marginBottom: "15px",
-    padding: "6px 12px",
-    background: "#e5e7eb",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  marginBottom: "20px",
+  padding: "8px 16px",
+  background: "#1e293b",
+  color: "#fff",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "500",
+  fontSize: "14px",
+  transition: "all 0.3s ease",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+},
+backIcon: {
+  fontSize: "16px",
+  transition: "transform 0.3s ease",
+},
 };

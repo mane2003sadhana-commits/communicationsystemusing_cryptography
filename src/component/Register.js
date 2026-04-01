@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from "firebase/database";
-import { auth, rtdb } from "../Firebaseconfig"; // ✅ use rtdb
+import { auth, rtdb } from "../Firebaseconfig";
 
 const styles = {
   wrapper: {
@@ -24,6 +24,7 @@ const styles = {
   logo: { fontSize: "40px", marginBottom: "10px" },
   title: { marginBottom: "6px", color: "#1e293b" },
   subtitle: { fontSize: "14px", color: "#64748b", marginBottom: "25px" },
+
   input: {
     width: "100%",
     height: "45px",
@@ -34,15 +35,7 @@ const styles = {
     border: "1px solid #cbd5e1",
     outline: "none",
   },
-  select: {
-    width: "100%",
-    height: "45px",
-    marginBottom: "15px",
-    borderRadius: "8px",
-    border: "1px solid #cbd5e1",
-    padding: "0 12px",
-    fontSize: "15px",
-  },
+
   button: {
     width: "100%",
     height: "45px",
@@ -55,8 +48,27 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
   },
+
   text: { marginTop: "18px", fontSize: "14px", color: "#475569" },
   link: { color: "#2563eb", cursor: "pointer", fontWeight: "600" },
+
+  error: {
+    background: "#fee2e2",
+    color: "#b91c1c",
+    padding: "8px",
+    borderRadius: "6px",
+    marginBottom: "10px",
+    fontSize: "13px",
+  },
+
+  success: {
+    background: "#dcfce7",
+    color: "#166534",
+    padding: "8px",
+    borderRadius: "6px",
+    marginBottom: "10px",
+    fontSize: "13px",
+  },
 };
 
 function Register() {
@@ -70,23 +82,48 @@ function Register() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ NEW
+
+  const validate = () => {
+    if (!fullname.trim()) return "Full name is required";
+
+    if (!/^[A-Za-z ]{3,}$/.test(fullname))
+      return "Name must be at least 3 characters and only letters";
+
+    if (!email) return "Email is required";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return "Enter a valid email address";
+
+    if (!password) return "Password is required";
+
+    if (password.length < 6)
+      return "Password must be at least 6 characters";
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+      return "Password must contain at least 1 special symbol";
+
+    if (!/[0-9]/.test(password))
+      return "Password must contain at least 1 number";
+
+    if (password !== confirm) return "Passwords do not match";
+
+    return null;
+  };
 
   const handleRegister = async () => {
     setError("");
     setSuccess("");
 
-    if (!fullname || !email || !password || !confirm) {
-      setError("All fields are required");
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    if (password !== confirm) {
-      setError("Passwords do not match");
-      return;
-    }
+    setLoading(true);
 
     try {
-      // 1️⃣ Create auth user
       const userCred = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -96,7 +133,6 @@ function Register() {
       const uid = userCred.user.uid;
       const userRole = role.toLowerCase();
 
-      // 2️⃣ Store user data in Realtime Database
       await set(ref(rtdb, "users/" + uid), {
         fullname,
         email,
@@ -104,24 +140,20 @@ function Register() {
         createdAt: Date.now(),
       });
 
-      
-
-      // 4️⃣ Save role locally (optional)
       localStorage.setItem("role", userRole);
 
-      // 5️⃣ Redirect
-      // ✅ after successful registration
-setSuccess("Registration successful! Please login.");
+      setSuccess("🎉 Registration successful! Please login.");
 
-// redirect ONLY to login
-// setTimeout(() => {
-//   navigate("/login");
-// }, 1500);
-
+      // optional redirect
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
 
     } catch (err) {
       setError(err.message);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -131,8 +163,8 @@ setSuccess("Registration successful! Please login.");
         <h2 style={styles.title}>Create Account</h2>
         <p style={styles.subtitle}>Register to use secure communication</p>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
+        {error && <div style={styles.error}>{error}</div>}
+        {success && <div style={styles.success}>{success}</div>}
 
         <input
           type="text"
@@ -162,17 +194,15 @@ setSuccess("Registration successful! Please login.");
           onChange={(e) => setConfirm(e.target.value)}
         />
 
-        {/* <select
-          style={styles.select}
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+        <button
+          style={{
+            ...styles.button,
+            opacity: loading ? 0.7 : 1,
+          }}
+          onClick={handleRegister}
+          disabled={loading}
         >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select> */}
-
-        <button style={styles.button} onClick={handleRegister}>
-          Register
+          {loading ? "Registering..." : "Register"}
         </button>
 
         <p style={styles.text}>

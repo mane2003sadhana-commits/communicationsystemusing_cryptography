@@ -91,74 +91,66 @@ const ColumnarTransposition = () => {
     setResult(decrypted);
   };
 
-  return (
-    <div style={styles.page}>
-      {/* 🔥 Blurred Background */}
-      <div style={styles.background}></div>
+ return (
+  <div style={styles.page}>
+    <div style={styles.overlay}></div>
 
-      {/* Overlay */}
-      <div style={styles.overlay}></div>
+    <div style={styles.card}>
+      <h2 style={styles.title}>🔐 Columnar Transposition Cipher</h2>
 
-      {/* Card */}
-      <div
-        style={{
-          ...styles.card,
-          transform: mounted ? "translateY(0px)" : "translateY(40px)",
-          opacity: mounted ? 1 : 0,
-        }}
-      >
-        <h2 style={styles.title}>🔐 Columnar Transposition Cipher</h2>
+      <h4 style={styles.subheading}>Introduction</h4>
+      <p style={styles.text}>
+        Columnar Transposition Cipher is a technique where the message is written
+        in rows under a keyword and then read column-wise based on alphabetical order
+        of the key.
+      </p>
 
-        <h4 style={styles.subheading}>Introduction</h4>
-        <p style={styles.text}>
-          Columnar Transposition is a classical encryption technique where the
-          message is written in rows under a keyword and read column-wise based
-          on alphabetical order of the key.
-        </p>
+      <h4 style={styles.subheading}>Example</h4>
+      <p style={styles.text}>
+        Message: <b>HELLO WORLD</b><br />
+        Key: <b>ZEBRA</b><br />
+        Encrypted: <b>ODLREOHWLX</b>
+      </p>
 
-        <h4 style={styles.subheading}>Example</h4>
-        <p style={styles.text}>
-          Message: <b>HELLO WORLD</b><br />
-          Key: <b>ZEBRA</b><br />
-          Encrypted: <b>ODLREOHWLX</b>
-        </p>
+      <h4 style={styles.subheading}>Try It Yourself</h4>
 
-        <h4 style={styles.subheading}>Try It Yourself</h4>
+      <textarea
+        style={styles.input}
+        placeholder="Enter message / cipher text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
 
-        <textarea
-          style={styles.input}
-          placeholder="Enter message / cipher text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
+      <input
+        type="text"
+        style={styles.input}
+        placeholder="Enter key (e.g. ZEBRA)"
+        value={key}
+        onChange={(e) => setKey(e.target.value)}
+      />
 
-        <input
-          type="text"
-          style={styles.input}
-          placeholder="Enter key (e.g. ZEBRA)"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-        />
-
-        <div style={{ marginTop: "15px" }}>
-          <button style={styles.btnPrimary} onClick={encrypt}>
-            Encrypt
-          </button>
-          <button style={styles.btnSecondary} onClick={decrypt}>
-            Decrypt
-          </button>
-        </div>
-
-        {result && (
-          <div style={styles.resultBox}>
-            <b>Output:</b> {result}
-          </div>
-        )}
+      <div style={styles.buttonGroup}>
+        <button style={styles.btn} onClick={encrypt}>
+          🔒 Encrypt
+        </button>
+        <button style={styles.btnSecondary} onClick={decrypt}>
+          🔓 Decrypt
+        </button>
       </div>
-    </div>
-  );
-};
 
+      {result && (
+        <div style={styles.outputBox}>
+          <span style={styles.outputLabel}>Result</span>
+          <p style={styles.outputText}>{result}</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+};
+// Columnar Transposition is a classical encryption technique where the
+//           message is written in rows under a keyword and read column-wise based
+//           on alphabetical order of the key.
 export default ColumnarTransposition;
 
 const styles = {
@@ -167,109 +159,116 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    fontFamily: "Segoe UI, sans-serif",
-    position: "relative",
-    overflow: "hidden",
-  },
-
-  // 🔥 Blurred Background Layer
-  background: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
     backgroundImage: `url(${Image})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
-   filter: "blur(2px) brightness(1)",
+    position: "relative",
+    fontFamily: "Poppins, sans-serif",
+    padding: "20px",
+  },
+
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(170, 163, 163, 0.75)",
     zIndex: 0,
   },
 
-  // Dark overlay for readability
-  overlay: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    background: "rgba(0,0,0,0.4)",
-    top: 0,
-    left: 0,
-    zIndex: 1,
-  },
-
-  // ✅ White Professional Card
   card: {
-    position: "relative",
-    background: "#ffffff",
+    width: "380px",
+    padding: "25px",
     borderRadius: "18px",
-    padding: "30px",
-    width: "420px",
+    background: "#f9fafb",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+    border: "1px solid #e5e7eb",
     color: "#1f2937",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-    transition: "all 0.4s ease",
-    zIndex: 2,
+    position: "relative",
+    zIndex: 1,
   },
 
   title: {
     textAlign: "center",
-    marginBottom: "15px",
-    fontSize: "24px",
-    color: "#1e3a8a",
+    marginBottom: "20px",
+    fontSize: "22px",
     fontWeight: "600",
+    color: "#1e3a8a",
   },
 
   subheading: {
-    marginTop: "15px",
+    marginTop: "18px",
+    marginBottom: "6px",
+    fontSize: "14px",
     color: "#374151",
     fontWeight: "600",
   },
 
   text: {
-    fontSize: "14px",
-    lineHeight: "1.6",
+    fontSize: "13px",
     color: "#4b5563",
+    lineHeight: "1.6",
   },
 
   input: {
     width: "100%",
-    marginTop: "10px",
-    padding: "12px",
+    marginTop: "12px",
+    padding: "10px",
     borderRadius: "10px",
     border: "1px solid #d1d5db",
     outline: "none",
+    fontSize: "14px",
     background: "#f9fafb",
     color: "#111827",
-    fontSize: "14px",
   },
 
-  btnPrimary: {
-    padding: "10px 18px",
-    background: "linear-gradient(135deg, #22c55e, #16a34a)",
+  buttonGroup: {
+    marginTop: "18px",
+    display: "flex",
+    gap: "12px",
+  },
+
+  btn: {
+    flex: 1,
+    padding: "10px",
+    background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "10px",
     cursor: "pointer",
-    marginRight: "10px",
-    fontWeight: "500",
+    fontWeight: "600",
   },
 
   btnSecondary: {
-    padding: "10px 18px",
-    background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+    flex: 1,
+    padding: "10px",
+    background: "linear-gradient(135deg, #059669, #047857)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "10px",
     cursor: "pointer",
-    fontWeight: "500",
+    fontWeight: "600",
   },
 
-  resultBox: {
-    marginTop: "15px",
-    padding: "12px",
-    borderRadius: "10px",
+  outputBox: {
+    marginTop: "22px",
+    padding: "16px",
+    borderRadius: "12px",
     background: "#f3f4f6",
-    fontSize: "14px",
     border: "1px solid #d1d5db",
+  },
+
+  outputLabel: {
+    fontSize: "12px",
+    color: "#6b7280",
+  },
+
+  outputText: {
+    marginTop: "6px",
+    fontWeight: "bold",
+    letterSpacing: "1px",
+    fontSize: "15px",
     color: "#111827",
   },
 };
