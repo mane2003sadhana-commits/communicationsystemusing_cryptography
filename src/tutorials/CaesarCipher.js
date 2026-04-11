@@ -1,10 +1,24 @@
 import React, { useState } from "react";
 import Image from "../images/caser.jpeg";
+import { useEffect } from "react";
+import { ref, onValue } from "firebase/database";
+import { rtdb } from "../Firebaseconfig";
 
 const CaesarCipher = () => {
   const [text, setText] = useState("");
   const [key, setKey] = useState(3);
   const [result, setResult] = useState("");
+  const [tutorial, setTutorial] = useState(null);
+
+  useEffect(() => {
+  const tutorialRef = ref(rtdb, "tutorials/caesar");
+
+  onValue(tutorialRef, (snapshot) => {
+    if (snapshot.exists()) {
+      setTutorial(snapshot.val());
+    }
+  });
+}, []);
 
   const encrypt = () => {
     const encrypted = text
@@ -44,17 +58,20 @@ const CaesarCipher = () => {
         <h2 style={styles.title}>🔐 Caesar Cipher Tool</h2>
 
         <h4 style={styles.subheading}>Introduction</h4>
-        <p style={styles.text}>
-          Caesar Cipher is one of the simplest and oldest encryption techniques.
-          Each letter is shifted by a fixed number of positions.
-        </p>
+        <p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.introduction}
+</p>
+
+
 
         <h4 style={styles.subheading}>Example</h4>
-        <p style={styles.text}>
-          Message: <b>HELLO</b><br />
-          Key: <b>3</b><br />
-          Encrypted: <b>KHOOR</b>
-        </p>
+       <p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.example}
+</p>
+<h4 style={styles.subheading}>Working</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.working}
+</p>
 
         <h4 style={styles.subheading}>Try It Yourself</h4>
 

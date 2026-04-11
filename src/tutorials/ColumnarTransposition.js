@@ -1,12 +1,25 @@
 import React, { useState } from "react";
 import Image from "../images/columnar.jpeg";
+import { useEffect } from "react";
+import { ref, onValue } from "firebase/database";
+import { rtdb } from "../Firebaseconfig";
 
 const ColumnarTransposition = () => {
   const [text, setText] = useState("");
   const [key, setKey] = useState("");
   const [result, setResult] = useState("");
 
- 
+ const [tutorial, setTutorial] = useState(null);
+ useEffect(() => {
+  const tutorialRef = ref(rtdb, "tutorials/columnar");
+
+  onValue(tutorialRef, (snapshot) => {
+    if (snapshot.exists()) {
+      setTutorial(snapshot.val());
+    }
+  });
+}, []);
+
   const encrypt = () => {
     if (!key) {
       alert("Please enter a key");
@@ -94,20 +107,20 @@ const ColumnarTransposition = () => {
     <div style={styles.card}>
       <h2 style={styles.title}>🔐 Columnar Transposition Cipher</h2>
 
-      <h4 style={styles.subheading}>Introduction</h4>
-      <p style={styles.text}>
-        Columnar Transposition Cipher is a technique where the message is written
-        in rows under a keyword and then read column-wise based on alphabetical order
-        of the key.
-      </p>
+    <h4 style={styles.subheading}>Introduction</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.introduction}
+</p>
 
-      <h4 style={styles.subheading}>Example</h4>
-      <p style={styles.text}>
-        Message: <b>HELLO WORLD</b><br />
-        Key: <b>ZEBRA</b><br />
-        Encrypted: <b>ODLREOHWLX</b>
-      </p>
+<h4 style={styles.subheading}>Example</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.example}
+</p>
 
+<h4 style={styles.subheading}>Working</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.working}
+</p>
       <h4 style={styles.subheading}>Try It Yourself</h4>
 
       <textarea

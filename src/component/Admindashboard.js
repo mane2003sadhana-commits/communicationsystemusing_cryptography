@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import { ref, onValue } from "firebase/database";
 import { rtdb, auth } from "../Firebaseconfig";
 import { signOut } from "firebase/auth";
@@ -6,8 +6,19 @@ import { signOut } from "firebase/auth";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, ResponsiveContainer, Legend,
 } from "recharts";
-import logo from "../images/logo.jpeg";
+import logo from "../images/krypton2.PNG";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { InitTutorials } from "../utils/InitTutorials";
+import { push } from "firebase/database"; 
+import { update, remove } from "firebase/database";
+import { get } from "firebase/database"; // ✅ use get instead of onValue
+
+
 const Admindashboard = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+const reportRef = useRef();
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedReport, setSelectedReport] = useState("users");
 
@@ -18,14 +29,39 @@ const Admindashboard = () => {
   const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");
 
-const getFilteredMessages = () => {
+const [tutorials, setTutorials] = useState([]);
+
+const [newTitle, setNewTitle] = useState("");
+const [newIntro, setNewIntro] = useState("");
+const [newExample, setNewExample] = useState("");
+
+const [editId, setEditId] = useState(null);
+const [editTitle, setEditTitle] = useState("");
+const [editIntro, setEditIntro] = useState("");
+const [editExample, setEditExample] = useState("");
+
+const [newWorking, setNewWorking] = useState("");
+const [editWorking, setEditWorking] = useState("");
+
+const [showAddForm, setShowAddForm] = useState(false);
+
+// ✅ FILTER USERS (search by name)
+const FilteredUsers = () => {
+  return users.filter((u) => {
+    const name = (u.fullname || u.name || "").toLowerCase();
+    return name.includes(searchTerm.toLowerCase());
+  });
+};
+
+// ✅ FILTER MESSAGES (date filter only)
+const FilteredMessages = () => {
   if (!fromDate || !toDate) return messages;
 
   const from = new Date(fromDate);
   const to = new Date(toDate);
-
-  // 🔥 VERY IMPORTANT (include full day)
   to.setHours(23, 59, 59, 999);
+
+
 
   return messages.filter((m) => {
     if (!m.timestamp) return false;
@@ -34,28 +70,165 @@ const getFilteredMessages = () => {
     return msgDate >= from && msgDate <= to;
   });
 };
-const getFilteredUsers = () => {
-  if (!fromDate || !toDate) return users;
-
-  const from = new Date(fromDate);
-  const to = new Date(toDate);
-
-  // 🔥 VERY IMPORTANT (include full day)
-  to.setHours(23, 59, 59, 999);
-
-  return users.filter((u) => {
-    if (!u.createdAt) return false;
-
-    const userDate = new Date(u.createdAt);
-    return userDate >= from && userDate <= to;
-  });
-};
   // LOGOUT
   const handleLogout = async () => {
     await signOut(auth);
     window.location.href = "/";
   };
 
+
+const handleAddTutorial = async () => {
+  if (!newTitle) {
+    alert("Enter title");
+    return;
+  }
+
+  const tutorialRef = ref(rtdb, "tutorials");
+
+  await push(tutorialRef, {
+    title: newTitle,
+    introduction: newIntro,
+    example: newExample,
+    working: newWorking,
+  });
+
+  setNewTitle("");
+  setNewIntro("");
+  setNewExample("");
+    setNewWorking("");
+  setShowAddForm(false); 
+
+};
+
+
+const handleDeleteUser = async (id) => {
+  if (!window.confirm("Delete this user?")) return;
+
+  try {
+    // ✅ 1. Delete user
+    await remove(ref(rtdb, `users/${id}`));
+
+    // ✅ 2. Get all messages ONCE
+    const snapshot = await get(ref(rtdb, "messages"));
+    const data = snapshot.val() || {};
+
+    // ✅ 3. Delete only that user's messages
+    const deletePromises = [];
+
+    Object.entries(data).forEach(([msgId, msg]) => {
+      if (msg.senderId === id) {
+        deletePromises.push(remove(ref(rtdb, `messages/${msgId}`)));
+      }
+    });
+
+    await Promise.all(deletePromises); // ✅ wait for all deletes
+
+    alert("User and messages deleted successfully");
+  } catch (err) {
+    console.error(err);
+    alert("Error deleting user");
+  }
+};const downloadPDF = () => {
+  const doc = new jsPDF();
+
+  const today = new Date().toLocaleDateString();
+
+  // Title
+  doc.setFontSize(18);
+  doc.text("Admin Report", 14, 15);
+
+  doc.setFontSize(11);
+  doc.text(`Date: ${today}`, 14, 22);
+
+  // 🔥 USER REPORT
+  if (selectedReport === "users") {
+    const tableData = FilteredUsers().map((u) => [
+      u.fullname || u.name,
+      u.email,
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["Name", "Email"]],
+      body: tableData,
+    });
+  }
+
+  // 🔥 MESSAGE REPORT
+  else if (selectedReport === "messages") {
+    const tableData = FilteredMessages().map((m) => {
+      const user = users.find((u) => u.id === m.senderId);
+      const name =
+        user?.fullname || user?.name || user?.email || "Unknown";
+
+      return [name, m.encryptedMsg, m.method];
+    });
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["Sender", "Message", "Method"]],
+      body: tableData,
+    });
+  }
+
+  // 🔥 USERWISE REPORT
+  else if (selectedReport === "userwise") {
+    const tableData = getUserMessageStats().map((u) => [
+      u.name,
+      u.count,
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["User", "Messages"]],
+      body: tableData,
+    });
+  }
+
+  // 🔥 TOP USERS
+  else if (selectedReport === "topusers") {
+    const tableData = getTopUsers().map((u, i) => [
+      i + 1,
+      u.name,
+      u.count,
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["Rank", "User", "Messages"]],
+      body: tableData,
+    });
+  }
+
+  // 🔥 ENCRYPTION REPORT
+  else if (selectedReport === "encryption") {
+    const tableData = methodData.map((m) => [
+      m.name,
+      m.value,
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["Method", "Usage"]],
+      body: tableData,
+    });
+  }
+
+  doc.save("Admin_Report.pdf");
+};
+
+  const handleEditTutorial = (t) => {
+  setEditId(t.id);
+  setEditTitle(t.title);
+  setEditIntro(t.introduction);
+  setEditExample(t.example);
+  setEditWorking(t.working || "");
+};
+const handleDeleteTutorial = async (id) => {
+  if (!window.confirm("Delete this tutorial?")) return;
+
+  await remove(ref(rtdb, `tutorials/${id}`));
+};
   // USERS
   useEffect(() => {
     const userRef = ref(rtdb, "users");
@@ -68,6 +241,27 @@ const usersWithId = Object.entries(data).map(([id, value]) => ({
 
 setUsers(usersWithId);    });
   }, []);
+
+
+  useEffect(() => {
+  InitTutorials();
+}, []);
+
+useEffect(() => {
+  const tutorialRef = ref(rtdb, "tutorials");
+
+  onValue(tutorialRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    const list = Object.entries(data).map(([id, value]) => ({
+      id,
+      ...value,
+    }));
+
+    setTutorials(list);
+  });
+}, []);
+
 
   // MESSAGES
   useEffect(() => {
@@ -103,8 +297,7 @@ setUsers(usersWithId);    });
     ]);
   };
 
-  const COLORS = ["#2563eb", "#16a34a", "#dc2626", "#9333ea"];
-
+const COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#8b5cf6"];
   const getMethodAnalysis = () => {
   if (methodData.length === 0) return {};
 
@@ -148,21 +341,32 @@ const { max, min } = getMethodAnalysis();
       <h2 style={styles.heading}>Dashboard Overview</h2>
 
       <div style={styles.cards}>
-        <div style={styles.card}>
-          <h4>Total Users</h4>
-          <p>{users.length}</p>
-        </div>
 
-        <div style={styles.card}>
-          <h4>Total Messages</h4>
-          <p>{messages.length}</p>
-        </div>
+  <div style={styles.cardBlue}>
+    <div style={styles.cardIcon}>👤</div>
+    <div>
+      <h4 style={styles.cardTitle}>Total Users</h4>
+      <p style={styles.cardValue}>{users.length}</p>
+    </div>
+  </div>
 
-        <div style={styles.card}>
-          <h4>Encryption Types</h4>
-          <p>{methodData.length}</p>
-        </div>
-      </div>
+  <div style={styles.cardGreen}>
+    <div style={styles.cardIcon}>💬</div>
+    <div>
+      <h4 style={styles.cardTitle}>Total Messages</h4>
+      <p style={styles.cardValue}>{messages.length}</p>
+    </div>
+  </div>
+
+  <div style={styles.cardPurple}>
+    <div style={styles.cardIcon}>🔐</div>
+    <div>
+      <h4 style={styles.cardTitle}>Encryption Types</h4>
+      <p style={styles.cardValue}>{methodData.length}</p>
+    </div>
+  </div>
+
+</div>
 
       <div style={styles.chartBox}>
         <ResponsiveContainer>
@@ -199,92 +403,139 @@ const { max, min } = getMethodAnalysis();
 };
 
  const renderReports = () => (
-  <>
+  <div ref={reportRef}>
     <h2 style={styles.heading}>Reports</h2>
-
-    {/* USER REPORT TABLE */}
-   {selectedReport === "users" && (
-  <>
-    <h2 style={styles.heading}>User Report</h2>
-
-     {/* DATE FILTER */}
-<div style={styles.filterRow}>
+    <div style={styles.filterRow}>
   
-  <span style={styles.labelText}>From :</span>
-  <input
-    type="date"
-    value={fromDate}
-    onChange={(e) => setFromDate(e.target.value)}
-    style={styles.dateInput}
-  />
+  <div style={styles.leftSection}>
+    {/* empty OR you can add title/filter later */}
+  </div>
 
-  <span style={styles.labelText}>To :</span>
-  <input
-    type="date"
-    value={toDate}
-    onChange={(e) => setToDate(e.target.value)}
-    style={styles.dateInput}
-  />
+  <button onClick={downloadPDF} style={styles.logoutBtn}>
+    📄 Download PDF
+  </button>
 
 </div>
-    {/* TOTAL */}
-    <h3>Total Users: {getFilteredUsers().length}</h3>
+    {/* USER REPORT TABLE */}
+  {selectedReport === "users" && (
+  <>
+    <h2 style={styles.heading}> Total Users </h2>
 
-    {/* TABLE */}
-    <table style={styles.table}>
-      <thead style={{ background: "#e2e8f0" }}>
-        <tr>
-          <th style={styles.th}>Name</th>
-          <th style={styles.th}>Email</th>
-        </tr>
-      </thead>
+   <div style={styles.filterRow}>
+  <div style={styles.leftSection}>
+    <input
+      type="text"
+      placeholder="🔍 Search user by name..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      style={styles.dateInput}
+    />
+  </div>
+</div>
 
-      <tbody>
-        {getFilteredUsers().length === 0 ? (
-          <tr>
-            <td colSpan="2" style={{ textAlign: "center", padding: "10px" }}>
-              No Users Found
-            </td>
-          </tr>
-        ) : (
-          getFilteredUsers().map((u, i) => (
-            <tr key={i} style={styles.tr}>
-              <td style={styles.td}>{u.fullname || u.name}</td>
-              <td style={styles.td}>{u.email}</td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+    {/* 📅 DATE FILTER */}
+    <div style={styles.filterRow}>
+  
+  <div style={styles.leftSection}>
+    <span style={styles.labelText}>From :</span>
+    <input
+      type="date"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+      style={styles.dateInput}
+    />
+
+    <span style={styles.labelText}>To :</span>
+    <input
+      type="date"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+      style={styles.dateInput}
+    />
+  </div>
+
+</div>
+{/* 🔥 FILTER LOGIC */}
+    {(() => {
+      const filteredUsers = users.filter((u) => {
+        const name = (u.fullname || u.name || "").toLowerCase();
+        return name.includes(searchTerm.toLowerCase());
+      });
+
+      return (
+        <>
+          {/* TOTAL */}
+          <h3>Total Users: {filteredUsers.length}</h3>
+
+          {/* TABLE */}
+          <table style={styles.table}>
+            <thead style={{ background: "#e2e8f0" }}>
+              <tr>
+                <th style={styles.th}>Name</th>
+                <th style={styles.th}>Email</th>
+                <th style={styles.th}>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="2" style={{ textAlign: "center", padding: "10px" }}>
+                    No Users Found
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u, i) => (
+                  <tr key={i}>
+  <td style={styles.td}>{u.fullname || u.name}</td>
+  <td style={styles.td}>{u.email}</td>
+
+  <td style={styles.td}>
+    <button
+      style={styles.deleteBtn}
+      onClick={() => handleDeleteUser(u.id)}
+    >
+      ❌ Delete
+    </button>
+  </td>
+</tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </>
+      );
+    })()}
   </>
 )}
     {/* MESSAGE REPORT */}
 {selectedReport === "messages" && (
   <>
-    <h2 style={styles.heading}>Date-wise Message Report</h2>
+    <h2 style={styles.heading}> Message Activity </h2>
 
-   {/* DATE FILTER */}
-<div style={styles.filterRow}>
+  <div style={styles.filterRow}>
   
-  <span style={styles.labelText}>From :</span>
-  <input
-    type="date"
-    value={fromDate}
-    onChange={(e) => setFromDate(e.target.value)}
-    style={styles.dateInput}
-  />
+  <div style={styles.leftSection}>
+    <span style={styles.labelText}>From :</span>
+    <input
+      type="date"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+      style={styles.dateInput}
+    />
 
-  <span style={styles.labelText}>To :</span>
-  <input
-    type="date"
-    value={toDate}
-    onChange={(e) => setToDate(e.target.value)}
-    style={styles.dateInput}
+    <span style={styles.labelText}>To :</span>
+    <input
+      type="date"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+      style={styles.dateInput}
+  
   />
+  </div>
 
-</div>
-    {/* TOTAL COUNT */}
-    <h3>Total Messages: {getFilteredMessages().length}</h3>
+</div>  {/* TOTAL COUNT */}
+    <h3>Total Messages: {FilteredMessages().length}</h3>
 
     {/* TABLE */}
     <table style={styles.table}>
@@ -297,14 +548,14 @@ const { max, min } = getMethodAnalysis();
       </thead>
 
       <tbody>
-        {getFilteredMessages().length === 0 ? (
+        {FilteredMessages().length === 0 ? (
           <tr>
             <td colSpan="4" style={{ textAlign: "center", padding: "10px" }}>
               No Messages Found
             </td>
           </tr>
         ) : (
-          getFilteredMessages().map((m, i) => {
+          FilteredMessages().map((m, i) => {
             const user = users.find((u) => u.id === m.senderId);
 
             const name =
@@ -329,7 +580,7 @@ const { max, min } = getMethodAnalysis();
 )}
 {selectedReport === "userwise" && (
   <>
-    <h2 style={styles.heading}>User Activity Report</h2>
+    <h2 style={styles.heading}>  User Activity </h2>
 
     {/* TABLE CARD */}
     <div style={styles.reportBox}>
@@ -374,7 +625,7 @@ const { max, min } = getMethodAnalysis();
 
 {selectedReport === "topusers" && (
   <>
-    <h2 style={styles.heading}>Top Active Users Report</h2>
+    <h2 style={styles.heading}>  Top Active Users </h2>
 
     {/* TABLE */}
     <div style={styles.reportBox}>
@@ -447,7 +698,7 @@ const { max, min } = getMethodAnalysis();
     {/* ENCRYPTION REPORT */}
    {selectedReport === "encryption" && (
   <>
-    <h3>Encryption Usage Analysis Report</h3>
+    <h3> Encryption Usage Analysis </h3>
 
     {/* SUMMARY */}
     <div style={styles.analysisBox}>
@@ -458,7 +709,6 @@ const { max, min } = getMethodAnalysis();
         ⚠️ Least Used Method: <b>{min?.name}</b> ({min?.value})
       </p>
     </div>
-      {/* TABLE */}
    {/* TABLE */}
 <div style={{ marginTop: "15px", marginBottom: "25px" }}>
   <table style={styles.table}>
@@ -502,15 +752,192 @@ const { max, min } = getMethodAnalysis();
     </div>
   </>
 )}
- </>
+ </div>
 ); 
 
+const renderTutorials = () => {
+  return (
+    <>
+      <h2 style={styles.heading}>Tutorial Management</h2>
+
+   {/* ➕ Add Button */}
+{!showAddForm && (
+  <button
+    onClick={() => setShowAddForm(true)}
+    style={styles.addBtn}
+  >
+    ➕ Add Tutorial
+  </button>
+)}
+
+{/* 📦 Add Form */}
+{showAddForm && (
+  <div style={styles.addBox}>
+    
+    <input
+      placeholder="Title"
+      value={newTitle}
+      onChange={(e) => setNewTitle(e.target.value)}
+      style={styles.input}
+    />
+
+    <textarea
+      placeholder="Introduction"
+      value={newIntro}
+      onChange={(e) => setNewIntro(e.target.value)}
+      style={styles.textarea}
+    />
+
+    <textarea
+      placeholder="Example"
+      value={newExample}
+      onChange={(e) => setNewExample(e.target.value)}
+      style={styles.textarea}
+    />
+
+    <textarea
+      placeholder="Working"
+      value={newWorking}
+      onChange={(e) => setNewWorking(e.target.value)}
+      style={styles.textarea}
+    />
+
+    <div style={{ marginTop: "10px" }}>
+      <button onClick={handleAddTutorial} style={styles.updateBtn}>
+        ✅ Add
+      </button>
+
+      <button
+        onClick={() => setShowAddForm(false)}
+        style={styles.cancelBtn}
+      >
+        ❌ Cancel
+      </button>
+    </div>
+  </div>
+)}   <table style={styles.table}>
+        <thead>
+          <tr>
+            <th style={styles.th}>Title</th>
+            <th style={styles.th}>Actions</th>
+          </tr>
+        </thead>
+
+       <tbody>
+  {tutorials.length === 0 ? (
+    <tr>
+      <td colSpan="2">No Tutorials</td>
+    </tr>
+  ) : (
+    tutorials.map((t) => (
+      <tr key={t.id}>
+       <td>
+  {editId === t.id ? (
+  <div>
+    {/* Title */}
+    <input
+      value={editTitle}
+      onChange={(e) => setEditTitle(e.target.value)}
+      placeholder="Title"
+      style={styles.input}
+    />
+
+    {/* 🔥 Introduction */}
+    <textarea
+      value={editIntro}
+      onChange={(e) => setEditIntro(e.target.value)}
+      placeholder="Introduction"
+      style={styles.textarea}
+    />
+
+    {/* 🔥 Example */}
+    <textarea
+      value={editExample}
+      onChange={(e) => setEditExample(e.target.value)}
+      placeholder="Example"
+      style={styles.textarea}
+    />
+    <textarea
+  value={editWorking}
+  onChange={(e) => setEditWorking(e.target.value)}
+  placeholder="Working"
+  style={styles.textarea}
+/>
+
+    {/* ✅ Update Button */}
+    <button onClick={handleUpdate} style={styles.updateBtn}>
+      ✅ Update
+    </button>
+    <button onClick={() => setEditId(null)} style={styles.cancelBtn}>
+      ❌ Cancel
+    </button>
+  </div>
+) : (
+    <>
+      <b style={{ fontSize: "16px", color: "#1e293b" }}>
+  {t.title}
+</b>
+    </>
+  )}
+</td>
+       <td>
+ 
+   {editId === t.id ? (
+  <>
+   
+  </>
+) : (
+  <>
+<button
+  onClick={() => handleEditTutorial(t)}
+  style={styles.editBtn}
+>
+  ✏️ Edit
+</button>
+
+<button
+  onClick={() => handleDeleteTutorial(t.id)}
+  style={styles.deleteBtn}
+>
+  🗑 Delete
+</button>  </>
+)}</td>   </tr>
+    ))
+  )}
+</tbody> </table>
+    </>
+  );
+};
+
+const handleUpdate = async () => {
+  if (!editTitle) {
+    alert("Enter title");
+    return;
+  }
+
+  const tutorialRef = ref(rtdb, "tutorials/" + editId);
+
+  await update(tutorialRef, {
+    title: editTitle,
+    introduction: editIntro,
+    example: editExample,
+    working: editWorking,
+  });
+
+  // reset edit mode
+  setEditId(null);
+  setEditTitle("");
+  setEditIntro("");
+  setEditExample("");
+};
   const renderContent = () => {
     if (activeTab === "dashboard") return renderDashboard();
     // if (activeTab === "users") return renderUsers();
+      if (activeTab === "tutorials") return renderTutorials(); // ✅ ADD THIS
     if (activeTab === "reports") return renderReports();
   };
 
+  
  return (
   <div style={styles.container}>
 
@@ -522,8 +949,8 @@ const { max, min } = getMethodAnalysis();
     <img src={logo} alt="logo" style={styles.logo} />
 
     <div>
-      <div style={styles.projectTitle}>Secure Communication System</div>
-      <div style={styles.companyName}> Cryptography </div>
+      <div style={styles.projectTitle}> Krypton Node </div>
+      <div style={styles.companyName}> Secure Communication System </div>
     </div>
   </div>
 
@@ -551,6 +978,9 @@ const { max, min } = getMethodAnalysis();
         Dashboard
       </button>
 
+    <button onClick={() => setActiveTab("tutorials")} style={styles.sideBtn}>
+  Tutorials
+</button>
       <button onClick={() => setActiveTab("reports")} style={styles.sideBtn}>
         Reports
       </button>
@@ -558,22 +988,22 @@ const { max, min } = getMethodAnalysis();
       {activeTab === "reports" && (
         <div style={styles.subMenu}>
           <button onClick={() => setSelectedReport("users")}>User Report</button>
-          <button onClick={() => setSelectedReport("messages")}>Message Report</button>
+          <button onClick={() => setSelectedReport("messages")}>Message Activity Report</button>
           <button onClick={() => setSelectedReport("encryption")}>
-            Encryption Report
+            Encryption Analytics
           </button>
           <button onClick={() => setSelectedReport("userwise")}>
-            User-wise Report
+           User Activity Analysis
           </button>
           <button onClick={() => setSelectedReport("topusers")}>
-            Top Users
+            Top Active Users
           </button>
         </div>
       )}
 
-      <button style={styles.logoutSidebar} onClick={handleLogout}>
+      {/* <button style={styles.logoutSidebar} onClick={handleLogout}>
         Logout
-      </button>
+      </button> */}
     </div>
 
     {/* CONTENT */}
@@ -612,6 +1042,12 @@ adminText: {
   letterSpacing: "0.5px",
 },
 
+leftSection: {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  flexWrap: "wrap",
+},
   /* ================= HEADER ================= */
 
   header: {
@@ -671,18 +1107,17 @@ adminText: {
     fontSize: "12px",
     color: "#94a3b8",
   },
-
-  roleBadge: {
-    marginTop: "3px",
-    padding: "3px 10px",
-    background: "#22c55e",
-    color: "#fff",
-    borderRadius: "20px",
-    fontSize: "10px",
-    fontWeight: "600",
-  },
-
-  logoutBtn: {
+roleBadge: {
+  marginTop: "2px",
+  padding: "2px 6px",
+  background: "#22c55e",
+  color: "#fff",
+  borderRadius: "12px",
+  fontSize: "15px",
+  fontWeight: "500",
+  display: "inline-block",   // 🔥 IMPORTANT (fix size issue)
+  lineHeight: "1",           // 🔥 removes extra height
+}, logoutBtn: {
     background: "linear-gradient(135deg, #ef4444, #dc2626)",
     color: "#fff",
     border: "none",
@@ -762,6 +1197,28 @@ sidebar: {
     color: "#0f172a",
   },
 
+  textarea: {
+  width: "100%",
+  padding: "10px",
+  marginTop: "8px",
+  borderRadius: "8px",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  resize: "none",
+  minHeight: "70px",
+},
+
+updateBtn: {
+  marginTop: "10px",
+  padding: "8px 14px",
+  background: "#22c55e",
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "600",
+},
+
   /* ================= CARDS ================= */
 
   cards: {
@@ -775,20 +1232,31 @@ sidebar: {
     background: "linear-gradient(135deg, #ffffff, #e2e8f0)",
     padding: "25px",
     borderRadius: "14px",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+card: {
+  flex: 1,
+  padding: "25px",
+  borderRadius: "16px",
+  color: "#fff",
+  fontSize: "22px",
+  fontWeight: "600",
+  textAlign: "center",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+},
+
+boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
     textAlign: "center",
     fontSize: "22px",
     fontWeight: "600",
   },
 
   chartBox: {
-    background: "white",
-    padding: "20px",
-    borderRadius: "12px",
-    height: "300px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-  },
-
+  background: "white",
+  padding: "25px",
+  borderRadius: "16px",
+  height: "320px",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+  marginTop: "10px",
+},
  
   /* ================= REPORT ================= */
 
@@ -913,14 +1381,120 @@ dateInput: {
 filterRow: {
   display: "flex",
   alignItems: "center",
+  justifyContent: "space-between", // 🔥 IMPORTANT
   gap: "10px",
   marginBottom: "20px",
   flexWrap: "wrap",
 },
-
 labelText: {
   fontSize: "14px",
   fontWeight: "600",
   color: "#1e293b",
 },
+cardBlue: {
+  flex: 1,
+  display: "flex",
+  alignItems: "center",
+  gap: "15px",
+  padding: "20px",
+  borderRadius: "16px",
+  background: "linear-gradient(135deg, #3b82f6, #1e40af)",
+  color: "#fff",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+  transition: "0.3s",
+},
+
+cardGreen: {
+  flex: 1,
+  display: "flex",
+  alignItems: "center",
+  gap: "15px",
+  padding: "20px",
+  borderRadius: "16px",
+  background: "linear-gradient(135deg, #22c55e, #166534)",
+  color: "#fff",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+},
+
+cardPurple: {
+  flex: 1,
+  display: "flex",
+  alignItems: "center",
+  gap: "15px",
+  padding: "20px",
+  borderRadius: "16px",
+  background: "linear-gradient(135deg, #9333ea, #5b21b6)",
+  color: "#fff",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+},
+
+cardIcon: {
+  fontSize: "28px",
+  background: "rgba(255,255,255,0.2)",
+  padding: "10px",
+  borderRadius: "50%",
+},
+
+cardTitle: {
+  margin: 0,
+  fontSize: "14px",
+  fontWeight: "500",
+},
+
+cardValue: {
+  margin: 0,
+  fontSize: "26px",
+  fontWeight: "700",
+},
+cancelBtn: {
+  marginTop: "10px",
+  marginLeft: "10px",   // 🔥 space between buttons
+  padding: "8px 14px",
+  background: "#ef4444",  // 🔴 red
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "600",
+},
+editBtn: {
+  padding: "6px 12px",
+  background: "#3b82f6",
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  marginRight: "8px",
+  fontWeight: "500",
+},
+
+deleteBtn: {
+  padding: "6px 12px",
+  background: "#ef4444",
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontWeight: "500",
+},
+addBtn: {
+  padding: "10px 16px",
+  background: "#2563eb",
+  color: "#fff",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontWeight: "600",
+  marginBottom: "15px",
+},
+
+addBox: {
+  background: "#ffffff",
+  padding: "15px",
+  borderRadius: "10px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+  marginBottom: "20px",
+},
+
+
 };

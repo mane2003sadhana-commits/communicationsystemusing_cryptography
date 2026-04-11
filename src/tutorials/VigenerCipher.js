@@ -1,10 +1,25 @@
 import React, { useState } from "react";
-import BgImage from "../images/vigenere.jpeg"; // ✅ your image
+import BgImage from "../images/vigenere.jpeg"; 
+import { useEffect } from "react";
+import { ref, onValue } from "firebase/database";
+import { rtdb } from "../Firebaseconfig";
+
 
 const VigenereCipher = () => {
   const [text, setText] = useState("");
   const [key, setKey] = useState("");
   const [result, setResult] = useState("");
+
+  const [tutorial, setTutorial] = useState(null);
+useEffect(() => {
+  const tutorialRef = ref(rtdb, "tutorials/vigenere");
+
+  onValue(tutorialRef, (snapshot) => {
+    if (snapshot.exists()) {
+      setTutorial(snapshot.val());
+    }
+  });
+}, []);
 
   const generateKey = (text, key) => {
     key = key.toUpperCase().replace(/[^A-Z]/g, "");
@@ -75,19 +90,19 @@ return (
       <h2 style={styles.title}>🔐 Vigenère Cipher Tool</h2>
 
       <h4 style={styles.subheading}>Introduction</h4>
-      <p style={styles.text}>
-        Vigenère Cipher is a method of encrypting text using a keyword.
-        Each letter in the message is shifted based on the corresponding
-        letter in the key, making it more secure than the Caesar Cipher.
-      </p>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.introduction}
+</p>
 
-      <h4 style={styles.subheading}>Example</h4>
-      <p style={styles.text}>
-        Message: <b>HELLO</b><br />
-        Key: <b>KEY</b><br />
-        Encrypted: <b>RIJVS</b>
-      </p>
+<h4 style={styles.subheading}>Example</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.example}
+</p>
 
+<h4 style={styles.subheading}>Working</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.working}
+</p>
       <h4 style={styles.subheading}>Try It Yourself</h4>
 
       <textarea

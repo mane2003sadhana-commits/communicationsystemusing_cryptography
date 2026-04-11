@@ -1,10 +1,24 @@
 import React, { useState } from "react";
 import BgImage from "../images/railfence.jpeg";
+import { useEffect } from "react";
+import { ref, onValue } from "firebase/database";
+import { rtdb } from "../Firebaseconfig";
 
 const RailFenceCipher = () => {
   const [text, setText] = useState("");
   const [rails, setRails] = useState(3);
   const [result, setResult] = useState("");
+
+  const [tutorial, setTutorial] = useState(null);
+  useEffect(() => {
+  const tutorialRef = ref(rtdb, "tutorials/railfence");
+
+  onValue(tutorialRef, (snapshot) => {
+    if (snapshot.exists()) {
+      setTutorial(snapshot.val());
+    }
+  });
+}, []);
 
   const encrypt = () => {
     if (rails <= 1) {
@@ -74,19 +88,20 @@ const RailFenceCipher = () => {
     <div style={styles.card}>
       <h2 style={styles.title}>🚆 Rail Fence Cipher Tool</h2>
 
-      <h4 style={styles.subheading}>Introduction</h4>
-      <p style={styles.text}>
-        Rail Fence Cipher is a transposition cipher where text is written in
-        a zig-zag pattern across multiple rails and then read row by row.
-      </p>
+     <h4 style={styles.subheading}>Introduction</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.introduction}
+</p>
 
-      <h4 style={styles.subheading}>Example</h4>
-      <p style={styles.text}>
-        Message: <b>HELLO WORLD</b><br />
-        Rails: <b>3</b><br />
-        Encrypted: <b>HOLELWRDLO</b>
-      </p>
+<h4 style={styles.subheading}>Example</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.example}
+</p>
 
+<h4 style={styles.subheading}>Working</h4>
+<p style={{ whiteSpace: "pre-line" }}>
+  {tutorial?.working}
+</p>
       <h4 style={styles.subheading}>Try It Yourself</h4>
 
       <textarea
