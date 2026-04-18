@@ -51,7 +51,7 @@ function Landingpg() {
             <h3>Multiple Encryption Techniques</h3>
             <p>
               Caesar Cipher, Rail Fence, Columnar Transposition,
-              AES, and RSA algorithms implemented.
+              algorithms implemented.
             </p>
           </div>
 

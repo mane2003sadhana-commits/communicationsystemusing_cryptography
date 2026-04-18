@@ -44,7 +44,7 @@ const UserDashboard = () => {
       case "crypto":
         return (
           <>
-            <h2>Cryptography Lab</h2>
+            <h2>Cryptography Techniques </h2>
             <CryptographyLab />
           </>
         );
@@ -160,7 +160,7 @@ const UserDashboard = () => {
             }}
           >
             {tab === "crypto"
-              ? "Cryptography Lab"
+              ? "Cryptography Techniques"
               : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}

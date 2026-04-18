@@ -135,57 +135,60 @@ const styles = {
   },
 
   card: {
-    width: "380px",
-    padding: "25px",
-    borderRadius: "18px",
-    background: "#f9fafb",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-    border: "1px solid #e5e7eb",
-    color: "#1f2937",
-    position: "relative",
-    zIndex: 1,
-  },
+  width: "500px",   // increased width
+  maxWidth: "95%",  // responsive for smaller screens
+  padding: "20px",  // slightly reduced padding
+  borderRadius: "16px",
+  background: "#ffffff",
+  boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+  border: "1px solid #e5e7eb",
+  color: "#1f2937",
+  position: "relative",
+  zIndex: 1,
+},
 
-  title: {
-    textAlign: "center",
-    marginBottom: "20px",
-    fontSize: "24px",
-    fontWeight: "600",
-    color: "#1e3a8a",
-  },
+title: {
+  textAlign: "center",
+  marginBottom: "14px", // reduced
+  fontSize: "22px",
+  fontWeight: "600",
+  color: "#1e3a8a",
+},
 
-  subheading: {
-    marginTop: "18px",
-    marginBottom: "6px",
-    fontSize: "14px",
-    color: "#374151",
-    fontWeight: "600",
-  },
+subheading: {
+  marginTop: "12px",
+  marginBottom: "4px",
+  fontSize: "14px",
+  color: "#111827",   
+  fontWeight: "700",  
+  letterSpacing: "0.3px", 
+},
 
-  text: {
-    fontSize: "13px",
-    color: "#4b5563",
-    lineHeight: "1.6",
-  },
+input: {
+  width: "95%",
+  marginTop: "8px",   // reduced
+  padding: "8px",
+  borderRadius: "8px",
+  border: "1px solid #d1d5db",
+  outline: "none",
+  fontSize: "13px",
+  background: "#f9fafb",
+  color: "#111827",
+},
 
-  input: {
-    width: "100%",
-    marginTop: "12px",
-    padding: "8px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-    outline: "none",
-    fontSize: "14px",
-    background: "#f9fafb",
-    color: "#111827",
-  },
+buttonGroup: {
+  marginTop: "14px",
+  display: "flex",
+  gap: "10px",
+},
 
-  buttonGroup: {
-    marginTop: "18px",
-    display: "flex",
-    gap: "12px",
-  },
-
+outputBox: {
+  marginTop: "16px",
+  padding: "14px",
+  borderRadius: "10px",
+  background: "#f3f4f6",
+  border: "1px solid #d1d5db",
+},
   btn: {
     flex: 1,
     padding: "12px",
@@ -206,14 +209,6 @@ const styles = {
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
-  },
-
-  outputBox: {
-    marginTop: "22px",
-    padding: "18px",
-    borderRadius: "12px",
-    background: "#f3f4f6",
-    border: "1px solid #d1d5db",
   },
 
   outputLabel: {

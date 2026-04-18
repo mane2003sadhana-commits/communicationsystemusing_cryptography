@@ -164,17 +164,18 @@ const styles = {
     zIndex: 0,
   },
 
-  card: {
-    width: "380px",
-    padding: "25px",
-    borderRadius: "18px",
-    background: "#f9fafb",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-    border: "1px solid #e5e7eb",
-    color: "#1f2937",
-    position: "relative",
-    zIndex: 1,
-  },
+ card: {
+  width: "500px",
+  maxWidth: "95%",
+  padding: "20px",
+  borderRadius: "16px",
+  background: "#ffffff",
+  boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
+  border: "1px solid #e5e7eb",
+  color: "#1f2937",
+  position: "relative",
+  zIndex: 1,
+},
 
   title: {
     textAlign: "center",
@@ -184,13 +185,14 @@ const styles = {
     color: "#1e3a8a",
   },
 
-  subheading: {
-    marginTop: "18px",
-    marginBottom: "6px",
-    fontSize: "14px",
-    color: "#374151",
-    fontWeight: "600",
-  },
+ subheading: {
+  marginTop: "12px",
+  marginBottom: "4px",
+  fontSize: "14px",
+  color: "#111827",
+  fontWeight: "700",
+  letterSpacing: "0.3px",
+},
 
   text: {
     fontSize: "13px",
@@ -198,24 +200,31 @@ const styles = {
     lineHeight: "1.6",
   },
 
-  input: {
-    width: "100%",
-    marginTop: "12px",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-    outline: "none",
-    fontSize: "14px",
-    background: "#f9fafb",
-    color: "#111827",
-  },
+ input: {
+  width: "95%",
+  marginTop: "8px",
+  padding: "7px",
+  borderRadius: "8px",
+  border: "1px solid #d1d5db",
+  outline: "none",
+  fontSize: "13px",
+  background: "#f9fafb",
+  color: "#111827",
+},
 
-  buttonGroup: {
-    marginTop: "18px",
-    display: "flex",
-    gap: "12px",
-  },
+buttonGroup: {
+  marginTop: "12px",
+  display: "flex",
+  gap: "10px",
+},
 
+outputBox: {
+  marginTop: "14px",
+  padding: "14px",
+  borderRadius: "10px",
+  background: "#f3f4f6",
+  border: "1px solid #d1d5db",
+},
   btn: {
     flex: 1,
     padding: "10px",
@@ -236,14 +245,6 @@ const styles = {
     borderRadius: "10px",
     cursor: "pointer",
     fontWeight: "600",
-  },
-
-  outputBox: {
-    marginTop: "22px",
-    padding: "16px",
-    borderRadius: "12px",
-    background: "#f3f4f6",
-    border: "1px solid #d1d5db",
   },
 
   outputLabel: {

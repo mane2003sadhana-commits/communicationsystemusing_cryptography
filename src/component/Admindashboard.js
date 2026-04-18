@@ -135,7 +135,7 @@ const handleDeleteUser = async (id) => {
 
   // Title
   doc.setFontSize(18);
-  doc.text("Admin Report", 14, 15);
+  doc.text(" Report ", 14, 15);
 
   doc.setFontSize(11);
   doc.text(`Date: ${today}`, 14, 22);
@@ -404,7 +404,7 @@ const { max, min } = getMethodAnalysis();
 
  const renderReports = () => (
   <div ref={reportRef}>
-    <h2 style={styles.heading}>Reports</h2>
+    {/* <h2 style={styles.heading}>Reports</h2> */}
     <div style={styles.filterRow}>
   
   <div style={styles.leftSection}>
